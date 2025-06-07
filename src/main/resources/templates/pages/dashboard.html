@@ -1,0 +1,74 @@
+<html xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/layout :: layout}">
+<div th:fragment="content">
+	<div class="container py-4">
+		<h2 class="mb-4 text-primary fw-bold">Dashboard</h2>
+
+		<div class="row g-4 mb-4">
+			<div class="col-md-4">
+				<div class="card border-primary shadow-sm">
+					<div class="card-body text-center">
+						<h5 class="card-title text-uppercase">Tổng đơn hàng</h5>
+						<p id="totalOrders" class="fs-4 fw-semibold text-primary">--</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card border-success shadow-sm">
+					<div class="card-body text-center">
+						<h5 class="card-title text-uppercase">Doanh thu</h5>
+						<p id="totalRevenue" class="fs-4 fw-semibold text-success">--</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4">
+				<div class="card border-warning shadow-sm">
+					<div class="card-body text-center">
+						<h5 class="card-title text-uppercase">Tồn kho</h5>
+						<p id="totalInventory" class="fs-4 fw-semibold text-warning">--</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="card shadow-sm">
+			<div class="card-header bg-light fw-bold">Trạng thái đơn hàng</div>
+			<div class="card-body">
+				<ul id="orderStatusList" class="list-group list-group-flush"></ul>
+			</div>
+		</div>
+	</div>
+
+	<!-- Nhúng Axios -->
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+	<!-- Gọi API và cập nhật dữ liệu -->
+	<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      axios.get("/admin/dashboard/api")
+        .then(function (response) {
+          const data = response.data.data;
+
+          document.getElementById("totalOrders").textContent = data.totalOrders;
+          document.getElementById("totalRevenue").textContent = data.totalRevenue.toLocaleString("vi-VN") + " VND";
+          document.getElementById("totalInventory").textContent = data.totalInventory;
+
+          const list = document.getElementById("orderStatusList");
+          list.innerHTML = "";
+          for (const status in data.orderStatusCount) {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `
+              <span class="text-capitalize">${status}</span>
+              <span class="badge bg-primary rounded-pill">${data.orderStatusCount[status]}</span>
+            `;
+            list.appendChild(li);
+          }
+        })
+        .catch(function (error) {
+          console.error("Lỗi khi gọi API:", error);
+        });
+    });
+  </script>
+</div>
+</html>

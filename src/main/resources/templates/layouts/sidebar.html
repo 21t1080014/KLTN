@@ -1,0 +1,125 @@
+<!-- layouts/sidebar.html -->
+<div th:fragment="sidebar" class="bg-dark">
+
+	<!-- Offcanvas sidebar (mobile) -->
+	<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1"
+		id="sidebarOffcanvas">
+		<div class="offcanvas-header">
+			<h5 class="offcanvas-title">Menu</h5>
+			<button type="button" class="btn-close btn-close-white"
+				data-bs-dismiss="offcanvas"></button>
+		</div>
+		<div class="offcanvas-body p-0">
+			<ul class="nav flex-column">
+				<!-- Dashboard -->
+				<li class="nav-item"><a class="nav-link"
+					th:href="@{/dashboard}"
+					th:classappend="${currentPath == '/dashboard'} ? 'bg-primary text-white'">
+						📊 Dashboard </a></li>
+
+				<!-- Quản lý sản phẩm -->
+				<li class="nav-item"><a class="nav-link"
+					data-bs-toggle="collapse" href="#mobileProduct" role="button"
+					th:attr="aria-expanded=${currentPath.startsWith('/products') 
+                                       or currentPath.startsWith('/categories') 
+                                       or currentPath == '/brands'}">
+						📦 Quản lý sản phẩm </a>
+					<div class="collapse ps-3" id="mobileProduct"
+						th:classappend="${currentPath.startsWith('/products') 
+                                or currentPath.startsWith('/categories') 
+                                or currentPath == '/brands'} ? 'show'">
+						<ul class="nav flex-column">
+							<!-- Danh sách sản phẩm -->
+							<li class="nav-item"><a class="nav-link"
+								th:href="@{/products}"
+								th:classappend="${currentPath == '/products'} ? 'bg-primary text-white'">
+									Danh sách sản phẩm </a></li>
+
+							<!-- Quản lý danh mục -->
+							<li class="nav-item"><a class="nav-link"
+								data-bs-toggle="collapse" href="#mobileCategory" role="button"
+								th:attr="aria-expanded=${currentPath.startsWith('/categories') 
+                                             or currentPath == '/brands'}">
+									Quản lý danh mục </a>
+								<div class="collapse ps-3" id="mobileCategory"
+									th:classappend="${currentPath.startsWith('/categories') 
+                                      or currentPath == '/brands'} ? 'show'">
+									<ul class="nav flex-column">
+										<!-- Thương hiệu -->
+										<li class="nav-item"><a class="nav-link"
+											th:href="@{/brands}"
+											th:classappend="${currentPath == '/brands'} ? 'bg-primary text-white'">
+												Thương hiệu </a></li>
+										<!-- Các mục con khác -->
+										<li class="nav-item"><a class="nav-link"
+											th:href="@{/categories/case-materials}"
+											th:classappend="${currentPath.startsWith('/categories/case-materials')} ? 'bg-primary text-white'">
+												Chất liệu dây </a></li>
+										<li class="nav-item"><a class="nav-link"
+											th:href="@{/categories/glass-materials}"
+											th:classappend="${currentPath.startsWith('/categories/glass-materials')} ? 'bg-primary text-white'">
+												Mặt kính </a></li>
+									</ul>
+								</div></li>
+						</ul>
+					</div></li>
+
+				<!-- Các mục còn lại tương tự -->
+				<li class="nav-item"><a class="nav-link" th:href="@{/orders}"
+					th:classappend="${currentPath == '/orders'} ? 'bg-primary text-white'">
+						🧾 Đơn hàng </a></li>
+				<!-- v.v... -->
+			</ul>
+		</div>
+	</div>
+
+	<!-- Static sidebar (desktop) -->
+	<div class="sidebar-static d-none d-lg-flex flex-column">
+		<ul class="nav flex-column">
+			<!-- tương tự như trên, chỉ khác id và collapse target -->
+			<!-- Dashboard -->
+			<li class="nav-item bg-dark"><a class="nav-link"
+				th:href="@{/dashboard}"
+				th:classappend="${currentPath == '/dashboard'} ? 'bg-primary text-white'">
+					📊 Dashboard </a></li>
+
+			<!-- Quản lý sản phẩm -->
+			<li class="nav-item bg-dark"><a class="nav-link"
+				data-bs-toggle="collapse" href="#desktopProduct" role="button"
+				th:attr="aria-expanded=${currentPath.startsWith('/products') 
+                                     or currentPath.startsWith('/categories') 
+                                     or currentPath == '/brands'}">
+					📦 Quản lý sản phẩm </a>
+				<div class="collapse ps-3" id="desktopProduct"
+					th:classappend="${currentPath.startsWith('/products') 
+                              or currentPath.startsWith('/categories') 
+                              or currentPath == '/brands'} ? 'show'">
+					<ul class="nav flex-column">
+						<li class="nav-item"><a class="nav-link"
+							th:href="@{/products}"
+							th:classappend="${currentPath == '/products'} ? 'bg-primary text-white'">
+								Danh sách sản phẩm </a></li>
+						<li class="nav-item"><a class="nav-link"
+							data-bs-toggle="collapse" href="#desktopCategory" role="button"
+							th:attr="aria-expanded=${currentPath.startsWith('/categories') 
+                                           or currentPath == '/brands'}">
+								Quản lý danh mục </a>
+							<div class="collapse ps-3" id="desktopCategory"
+								th:classappend="${currentPath.startsWith('/categories') 
+                                    or currentPath == '/brands'} ? 'show'">
+								<ul class="nav flex-column">
+									<li class="nav-item"><a class="nav-link"
+										th:href="@{/brands}"
+										th:classappend="${currentPath == '/brands'} ? 'bg-primary text-white'">
+											Thương hiệu </a></li>
+									<!-- v.v... -->
+								</ul>
+							</div></li>
+					</ul>
+				</div></li>
+
+			<!-- Các mục khác... -->
+		</ul>
+	</div>
+
+</div>

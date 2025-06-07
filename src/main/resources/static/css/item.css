@@ -1,0 +1,32 @@
+/* Overlay tối */
+#imageOverlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: rgba(0, 0, 0, 0.8);
+	display: none; /* ban đầu ẩn */
+	justify-content: center;
+	align-items: center;
+	z-index: 1050; /* Tăng z-index */
+	cursor: zoom-out;
+}
+
+/* Ảnh bên trong */
+#imageOverlay img {
+	max-width: 90%;
+	max-height: 90%;
+	border-radius: 8px;
+	border: 2px solid white;
+	box-shadow: 0 0 10px white;
+}
+
+.product-description {
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 800px;
+}

@@ -1,0 +1,414 @@
+/* ====== Breadcrumb ====== */
+.breadcrumb {
+	margin-bottom: 20px;
+	font-size: 14px;
+}
+
+.breadcrumb a {
+	color: #007bff;
+	text-decoration: none;
+}
+
+.breadcrumb span {
+	color: #555;
+}
+
+/* ====== Layout tổng ====== */
+.product-detail {
+	display: flex;
+	gap: 40px;
+	flex-wrap: wrap;
+}
+
+.product-detail .images {
+	display: flex;
+	flex: 1;
+}
+
+.product-detail .info {
+	flex: 1;
+}
+
+/* ====== Thumbnail và ảnh chính ====== */
+.thumbs-wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	width: 70px;
+}
+
+.thumb-nav {
+	border: none;
+	background: #f1f1f1;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	cursor: pointer;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background 0.2s ease;
+}
+
+.thumb-nav:hover {
+	background: #ddd;
+}
+
+.thumb-nav .arrow {
+	border: solid #555;
+	border-width: 0 2px 2px 0;
+	display: inline-block;
+	padding: 4px;
+}
+
+.thumbs {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	max-height: 500px;
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	padding-right: 2px;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none; /* IE 10+ */
+}
+
+.thumbs::-webkit-scrollbar {
+	display: none; /* Chrome, Safari */
+}
+
+.thumbs img {
+	width: 60px;
+	height: 60px;
+	object-fit: cover;
+	cursor: pointer;
+	border-radius: 6px;
+	border: 2px solid transparent;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
+}
+
+.thumbs img:hover {
+	border-color: #007bff;
+	transform: scale(1.05);
+}
+
+.main-image {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.main-image .badge-sale {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	background-color: red;
+	color: white;
+	font-size: 12px;
+	padding: 3px 6px;
+	border-radius: 3px;
+	display: none;
+}
+
+.image-wrapper {
+	position: relative;
+	display: inline-block;
+	max-width: 100%;
+}
+
+.image-wrapper img {
+	display: block;
+	max-width: 100%;
+	max-height: 500px;
+	object-fit: cover;
+	border-radius: 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	border: 1px solid #eee;
+}
+
+/* ====== Thông tin sản phẩm ====== */
+.product-detail
+ 
+h1 {
+	margin: 0 0 10px;
+	font-size: 24px;
+}
+
+.product-detail
+ 
+p {
+	margin: 5px 0;
+}
+
+.prices {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin: 10px 0;
+}
+
+.price-discounted {
+	font-size: 28px;
+	color: #e60023;
+	font-weight: bold;
+}
+
+.price-original {
+	font-size: 16px;
+	color: #999;
+	text-decoration: line-through;
+}
+
+.actions {
+	margin: 20px 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.qty
+ 
+button {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #ccc;
+	background: white;
+	cursor: pointer;
+}
+
+.qty
+ 
+input {
+	width: 50px;
+	text-align: center;
+	border: 1px solid #ccc;
+}
+
+.add-cart {
+	background: black;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+
+.buy-now {
+	background: white;
+	color: black;
+	border: 1px solid #333;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+
+/* ====== Tabs ====== */
+.tabs {
+	display: flex;
+	gap: 10px;
+	border-bottom: 1px solid #ddd;
+	margin-bottom: 10px;
+}
+
+.tab {
+	background: none;
+	border: none;
+	padding: 10px 15px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.tab
+.active {
+	border-bottom: 3px solid #000;
+	font-weight: bold;
+}
+
+.tab-content {
+	display: none;
+}
+
+.tab-content
+.active {
+	display: block;
+	padding: 10px 0;
+}
+
+/* ====== Mobile Responsive ====== */
+@media ( max-width : 768px) {
+	.product-detail {
+		flex-direction: column;
+	}
+	.product-detail .images {
+		flex-direction: column;
+		align-items: center;
+	}
+	.thumbs-wrapper {
+		display: none;
+	}
+	.main-image img {
+		max-width: 100%;
+		height: auto;
+	}
+}
+
+.product-detail h1 {
+	margin: 0 0 10px;
+	font-size: 24px;
+}
+
+.product-detail p {
+	margin: 5px 0;
+}
+
+.prices {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin: 10px 0;
+}
+
+.price-discounted {
+	font-size: 28px;
+	color: #e60023;
+	font-weight: bold;
+}
+
+.price-original {
+	font-size: 16px;
+	color: #999;
+	text-decoration: line-through;
+}
+
+.actions {
+	margin: 20px 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.qty button {
+	width: 30px;
+	height: 30px;
+	border: 1px solid #ccc;
+	background: white;
+	cursor: pointer;
+}
+
+.qty input {
+	width: 50px;
+	text-align: center;
+	border: 1px solid #ccc;
+}
+
+.add-cart {
+	background: black;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+
+.buy-now {
+	background: white;
+	color: black;
+	border: 1px solid #333;
+	padding: 8px 16px;
+	cursor: pointer;
+}
+
+/* ====== Tabs ====== */
+.tabs {
+	display: flex;
+	gap: 10px;
+	border-bottom: 1px solid #ddd;
+	margin-bottom: 10px;
+}
+
+.tab {
+	background: none;
+	border: none;
+	padding: 10px 15px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.tab.active {
+	border-bottom: 3px solid #000;
+	font-weight: bold;
+}
+
+.tab-content {
+	display: none;
+}
+
+.tab-content.active {
+	display: block;
+	padding: 10px 0;
+}
+
+/* ====== Mobile Responsive ====== */
+@media ( max-width : 768px) {
+	.product-detail {
+		flex-direction: column;
+	}
+	.product-detail
+ 
+.images {
+		flex-direction: column;
+		align-items: center;
+	}
+	.thumbs-wrapper {
+		display: none;
+	}
+	.main-image
+ 
+img {
+		max-width: 100%;
+		height: auto;
+	}
+}
+/* Thêm vào cuối file detail-shop.css */
+.thumb-nav.embedded {
+	all: unset;
+	width: 60px;
+	height: 60px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: #f5f5f5;
+	border-radius: 6px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+	cursor: pointer;
+	transition: background 0.2s ease;
+	margin: 2px 0;
+}
+
+.thumb-nav.embedded:hover {
+	background: #ddd;
+}
+
+.thumb-nav.embedded .arrow {
+	border: solid #555;
+	border-width: 0 2px 2px 0;
+	display: inline-block;
+	padding: 4px;
+}
+
+.table-detail {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 1rem;
+}
+
+.table-detail td {
+	border: 1px solid #ccc;
+	padding: 8px;
+}
+
+.table-detail td:first-child {
+	background-color: #f9f9f9;
+	width: 30%;
+}

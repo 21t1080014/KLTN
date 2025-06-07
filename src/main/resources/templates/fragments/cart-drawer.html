@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<!-- fragments/cart-drawer.html -->
+	<div th:fragment="cartDrawer" class="offcanvas offcanvas-end"
+		tabindex="-1" id="cartDrawer" aria-labelledby="cartDrawerLabel">
+		<div class="offcanvas-header">
+			<h5 class="offcanvas-title" id="cartDrawerLabel">Giỏ hàng của
+				bạn</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+				aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body d-flex flex-column">
+			<div id="cart-content" class="flex-grow-1 overflow-auto">
+				<!-- Danh sách sản phẩm sẽ render bằng JS -->
+			</div>
+
+			<!-- Tổng tiền và nút hành động: cố định ở dưới -->
+			<div class="border-top pt-3 mt-3">
+				<div id="cart-total"
+					class="d-flex justify-content-between fw-bold mb-3">
+					<span>Tổng tiền:</span> <span>0 ₫</span>
+					<!-- sẽ được cập nhật bằng JS -->
+				</div>
+				<div class="d-grid gap-2">
+					<a href="/cart" class="btn btn-outline-primary">Xem giỏ hàng</a> <a
+						href="/checkout" class="btn btn-primary">Thanh toán ngay</a>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

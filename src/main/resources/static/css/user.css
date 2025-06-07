@@ -1,0 +1,20 @@
+.input-wrapper {
+	position: relative;
+	min-height: 3.5rem;
+	/
+}
+
+/* Thông báo lỗi và cảnh báo */
+.field-error, .field-warning {
+	font-size: 0.875rem;
+	margin-top: 4px;
+	display: block;
+}
+
+.field-error {
+	color: #dc3545;
+}
+
+.field-warning {
+	color: #ffc107;
+}

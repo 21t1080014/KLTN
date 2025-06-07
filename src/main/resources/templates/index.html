@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Trang chủ - Shop đồng hồ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+<link rel="stylesheet" href="/css/shop.css">
+<link rel="stylesheet" href="/css/home.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/assets/owl.carousel.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/assets/owl.theme.default.min.css">
+
+</head>
+<body>
+
+	<!-- Navbar -->
+	<div th:replace="~{layouts/navbar :: navbar}"></div>
+
+	<!-- Main Content -->
+	<div class="container py-4">
+		<section class="promotions mt-5">
+			<div class="container">
+				<h4 class="mb-3 text-center text-danger" style="margin-top: 10px">Khuyến
+					mãi</h4>
+				<div id="promotionProducts" class="products-carousel owl-carousel">
+					<!-- JavaScript sẽ append sản phẩm khuyến mãi vào đây -->
+				</div>
+			</div>
+		</section>
+
+		<section class="new-arrivals">
+			<div class="container">
+				<h4 class="mb-3 text-center" style="margin-top: 10px">HÀNG MỚI
+					VỀ</h4>
+				<div id="newestProducts" class="row row-cols-2 row-cols-md-5 g-3">
+					<!-- JavaScript sẽ append các sản phẩm vào đây -->
+				</div>
+			</div>
+		</section>
+		<div style="min-height: 600px;">
+			<!-- Featured Products -->
+			<h4 class="mb-3 text-center" style="margin-top: 10px">Sản phẩm
+				nổi bật</h4>
+			<div class="d-flex justify-content-start gap-3 overflow-auto mb-4"
+				id="brandList"></div>
+			<div class="row row-cols-2 row-cols-md-5 g-3" id="featuredProducts"></div>
+		</div>
+	</div>
+	<!-- Quick View Modal -->
+	<div class="modal fade" id="quickViewModal" tabindex="-1"
+		aria-labelledby="quickViewLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-body p-4">
+					<button type="button"
+						class="btn-close position-absolute top-0 end-0 m-3"
+						data-bs-dismiss="modal"></button>
+					<div class="row">
+						<!-- Ảnh -->
+						<div class="col-md-6 text-center">
+							<div id="qvCarousel" class="carousel slide"
+								data-bs-ride="carousel">
+
+								<!-- Indicators -->
+								<div class="carousel-indicators" id="qv-indicators">
+									<!-- JS sẽ render -->
+								</div>
+
+								<!-- Wrapper for slides -->
+								<div class="carousel-inner" id="qv-carousel-inner">
+									<!-- JS sẽ render -->
+								</div>
+
+								<!-- Controls -->
+								<button class="carousel-control-prev" type="button"
+									data-bs-target="#qvCarousel" data-bs-slide="prev">
+									<span class="carousel-control-prev-icon"></span>
+								</button>
+								<button class="carousel-control-next" type="button"
+									data-bs-target="#qvCarousel" data-bs-slide="next">
+									<span class="carousel-control-next-icon"></span>
+								</button>
+							</div>
+						</div>
+						<!-- Thông tin -->
+						<div class="col-md-6">
+							<h4 id="qv-name"></h4>
+							<p>
+								SKU: <span id="qv-sku"></span>
+							</p>
+							<div
+								class="d-inline-flex align-items-baseline flex-nowrap gap-2 mb-2">
+								<strong id="qv-discounted" class="text-danger"></strong> <small
+									id="qv-original"
+									class="text-muted text-decoration-line-through"></small>
+							</div>
+							<!-- Thêm các thông tin khác như ngày tạo, segment, mô tả… -->
+							<p id="qv-description"></p>
+							<div class="mt-3">
+								<button class="btn btn-outline-secondary me-2"
+									onclick="decrementQty()">–</button>
+								<input id="qv-qty" type="text" value="1"
+									class="form-control d-inline-block text-center"
+									style="width: 4rem;">
+								<button class="btn btn-outline-secondary ms-2"
+									onclick="incrementQty()">+</button>
+							</div>
+<!-- 							<button id="qv-add-to-cart" class="btn btn-dark mt-3">Thêm
+								vào giỏ</button> -->
+							<button id="qv-add-to-cart" class="btn btn-dark mt-3"
+								data-product-id="${p.productId}">Thêm vào giỏ</button>
+
+							<div class="mt-2">
+								<a id="qv-detail-link" href="#">Xem chi tiết »</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div th:replace="~{fragments/cart-drawer :: cartDrawer}"></div>
+	<!-- Modal hồ sơ người dùng -->
+	<!-- <div th:if="${currentUser != null}" class="modal fade"
+		id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Hồ sơ người dùng</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"
+						aria-label="Đóng"></button>
+				</div>
+				<div class="modal-body">
+					<p>
+						<strong>Tên:</strong> <span th:text="${currentUser.fullName}">[Tên]</span>
+					</p>
+					<p>
+						<strong>Email:</strong> <span th:text="${currentUser.email}">[Email]</span>
+					</p>
+					<p>
+						<strong>Số điện thoại:</strong> <span
+							th:text="${currentUser.phone}">[Phone]</span>
+					</p>
+					<p>
+						<strong>Địa chỉ:</strong> <span th:text="${currentUser.address}">[Address]</span>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div> -->
+
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="module" src="/js/home-products.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/owl.carousel.min.js"></script>
+
+</body>
+</html>

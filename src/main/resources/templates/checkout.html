@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Thanh toán - Shop đồng hồ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+<link rel="stylesheet" href="/css/shop.css">
+</head>
+<body
+	th:attr="data-logged-in=${currentUser != null}, data-user-id=${currentUser != null ? currentUser.userId : ''}">
+	<div th:replace="~{layouts/navbar :: navbar}"></div>
+	<div class="container my-4">
+		<nav>
+			<a href="/">Trang chủ</a> > <a href="/cart">Giỏ hàng</a> > <span>Phương
+				thức thanh toán</span>
+		</nav>
+
+		<div class="row mt-4">
+			<div class="col-md-8">
+				<h5>Phương thức vận chuyển</h5>
+				<div class="border p-3 mb-3">
+					<input type="radio" name="shipping" id="ship1" checked> <label
+						for="ship1">Giao hàng tận nơi (đơn hàng nhỏ hơn 500.000
+						VND)</label> <span class="float-end">30,000₫</span>
+				</div>
+
+				<h5>Phương thức thanh toán</h5>
+				<div class="border p-3 mb-3">
+					<div>
+						<input type="radio" name="payment" id="cod" checked> <label
+							for="cod"><strong>Thanh toán khi giao hàng (COD)</strong></label>
+						<div id="codDescription" class="text-muted small mt-2">
+							- Đơn hàng đồng hồ cần đặt cọc 10%.<br> - Khách hàng mua từ
+							đơn hàng thứ hai không cần đặt cọc.<br> - Tài khoản ngân
+							hàng của shop là 1234512341- Vietinbank
+						</div>
+					</div>
+					<div class="mt-3">
+						<input type="radio" name="payment" id="bank"> <label
+							for="bank"><strong>Chuyển khoản qua ngân hàng</strong></label>
+						<div id="bankDescription" class="text-muted small mt-2"
+							style="display: none;">
+							Vui lòng chuyển khoản theo thông tin ngân hàng được cung cấp sau
+							khi đặt hàng<br> - Tài khoản ngân hàng của shop là
+							1234512341- Vietinbank.
+						</div>
+					</div>
+				</div>
+
+				<a href="/cart" class="btn btn-link">← Giỏ hàng</a>
+			</div>
+
+			<div class="col-md-4">
+				<h5>Chi tiết đơn hàng</h5>
+				<div id="order-summary">
+					<!-- Sản phẩm sẽ render từ JS -->
+				</div>
+				<div class="mb-3">
+					<label for="coupon">Mã giảm giá</label> <input type="text"
+						class="form-control" id="coupon">
+					<button class="btn btn-secondary btn-sm mt-2">Sử dụng</button>
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item d-flex justify-content-between">Tạm
+						tính <span id="subtotal">0₫</span>
+					</li>
+					<li class="list-group-item d-flex justify-content-between">Phí
+						vận chuyển <span id="shipping-fee">30,000₫</span>
+					</li>
+					<li class="list-group-item d-flex justify-content-between fw-bold">Tổng
+						cộng <span id="total-amount">0₫</span>
+					</li>
+				</ul>
+				<button id="place-order-btn" class="btn btn-primary w-100 mt-3">Hoàn
+					tất đơn hàng</button>
+			</div>
+		</div>
+	</div>
+	<!-- Modal Xác nhận -->
+	<div class="modal fade" id="confirmationModal" tabindex="-1"
+		aria-labelledby="confirmationModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<!-- Center vertically -->
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="confirmationModalLabel">Thông báo</h5>
+				</div>
+				<div class="modal-body" id="confirmationModalBody">
+					<!-- Nội dung sẽ được đổ vào JS -->
+				</div>
+				<div class="modal-footer">
+					<button type="button" id="confirmModalBtn" class="btn btn-primary"
+						data-bs-dismiss="modal">OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script type="module" src="/js/checkoutPage.js"></script>
+</body>
+</html>
