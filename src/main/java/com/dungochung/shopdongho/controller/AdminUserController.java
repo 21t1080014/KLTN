@@ -36,7 +36,7 @@ public class AdminUserController {
 	@GetMapping
 	public String showUser(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/AdminUser";
+		return "admin/users";
 	}
 
 	@GetMapping("/api")
@@ -90,6 +90,10 @@ public class AdminUserController {
 		user.setAddress(address);
 		user.setStatus(UserStatus.valueOf(status));
 		user.setRole(role);
+		// password rỗng nghĩa là không đổi mật khẩu (xem UserServiceImpl.updateUser)
+		if (password != null && !password.isEmpty()) {
+			user.setPasswordHash(password);
+		}
 		return userService.updateUser(userId, user, profileImage);
 	}
 

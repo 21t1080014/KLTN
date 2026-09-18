@@ -1,0 +1,143 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<h1 class="font-heading text-2xl text-charcoal mb-6">Quản lý Tồn kho</h1>
+	<form id="searchForm" class="row g-2 items-end mb-6">
+		<!-- Tìm tên sản phẩm -->
+		<div class="col-md">
+			<label class="form-label">Tên sản phẩm</label>
+			<input type="text" id="productName" name="productName" th:value="${param.productName}" class="form-control"
+				placeholder="Nhập tên sản phẩm..." />
+		</div>
+
+		<!-- Nút mở bộ lọc -->
+		<div class="col-auto">
+			<button type="button" class="btn btn-outline-secondary" data-bs-toggle="offcanvas"
+				data-bs-target="#filterDrawer" aria-controls="filterDrawer">
+				<i class="bi bi-funnel me-1"></i> Bộ lọc
+			</button>
+		</div>
+
+		<!-- Nút Tìm kiếm -->
+		<div class="col-auto">
+			<button type="submit" class="btn btn-primary">
+				<i class="bi bi-search me-1"></i> Tìm kiếm
+			</button>
+		</div>
+	</form>
+	<!-- Bộ lọc nâng cao (Offcanvas) -->
+	<div class="offcanvas offcanvas-end" tabindex="-1" id="filterDrawer" aria-labelledby="filterDrawerLabel">
+		<div class="offcanvas-header">
+			<h5 class="offcanvas-title" id="filterDrawerLabel">Bộ lọc nâng cao</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body">
+			<div class="row g-3">
+				<div class="col-6">
+					<label for="fromDate" class="form-label">Từ ngày</label>
+					<input type="date" id="fromDate" name="fromDate"
+						th:value="${#dates.format(param.fromDate,'yyyy-MM-dd')}" form="searchForm" class="form-control" />
+				</div>
+				<div class="col-6">
+					<label for="toDate" class="form-label">Đến ngày</label>
+					<input type="date" id="toDate" name="toDate" th:value="${#dates.format(param.toDate,'yyyy-MM-dd')}"
+						form="searchForm" class="form-control" />
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Danh sách kết quả -->
+	<ul class="list-group mb-3" id="inventoryList">
+		<!-- JavaScript sẽ render danh sách -->
+	</ul>
+	<div id="totalInventoryCount" class="text-right text-charcoal-muted text-sm"></div>
+	<div class="col-auto my-3">
+		<button type="button" id="btnLowStock" class="btn btn-outline-danger">
+			<i class="bi bi-exclamation-triangle-fill me-1"></i> Tồn kho thấp
+		</button>
+	</div>
+	<!-- Phân trang -->
+	<div class="flex justify-between items-center mt-3">
+		<nav>
+			<ul class="pagination mb-0" id="pagination">
+				<!-- JavaScript sẽ render phân trang -->
+			</ul>
+		</nav>
+	</div>
+	<!-- Modal cảnh báo kho thấp -->
+	<div class="modal fade" id="lowStockModal" tabindex="-1" aria-labelledby="lowStockModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header bg-danger">
+					<h5 class="modal-title !text-white" id="lowStockModalLabel">Sản phẩm tồn kho thấp</h5>
+					<button type="button" class="btn-close !text-white" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<ul id="lowStockList" class="list-group"></ul>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal chỉnh sửa tồn kho -->
+	<div class="modal fade" id="editInventoryModal" tabindex="-1" aria-labelledby="editInventoryModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="editInventoryForm">
+					<div class="modal-header">
+						<h5 class="modal-title" id="editInventoryModalLabel">Chỉnh sửa tồn kho</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" id="editProductId" name="productId">
+						<div class="mb-3">
+							<label for="editProductName" class="form-label">Tên sản phẩm</label>
+							<input type="text" class="form-control" id="editProductName" disabled>
+						</div>
+						<div class="mb-3">
+							<label for="editQuantity" class="form-label">Số lượng tồn</label>
+							<input type="number" class="form-control" id="editQuantity" name="quantity" required min="0">
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+						<button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Delete Confirmation Modal -->
+	<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteConfirmLabel">Confirm deletion</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">Are you sure you want to delete the inventory?</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+					<button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="fixed top-4 right-4 z-[1080]">
+		<div id="errorToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="flex">
+				<div class="toast-body"></div>
+				<button type="button" class="btn-close !text-white me-2 m-auto" data-bs-dismiss="toast"
+					aria-label="Close"></button>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/js/inventory.js"></script>
+</div>
+</html>

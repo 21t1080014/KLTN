@@ -29,7 +29,7 @@ public class OrderController {
 	@GetMapping
 	public String showOrder(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/orders";
+		return "admin/orders";
 	}
 
 	@GetMapping("/api")

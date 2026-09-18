@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.dungochung.shopdongho.enums.UserStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,6 +34,7 @@ public class UserEntity {
 	@Column(name = "email", unique = true, nullable = false)
 	private String email;
 
+	@JsonIgnore
 	@Column(name = "password_hash", nullable = false)
 	private String passwordHash;
 

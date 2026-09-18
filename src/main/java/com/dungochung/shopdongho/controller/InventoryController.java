@@ -28,7 +28,7 @@ public class InventoryController {
 	@GetMapping
 	public String showInventory(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/Inventory";
+		return "admin/inventory";
 	}
 
 	@GetMapping("/api")

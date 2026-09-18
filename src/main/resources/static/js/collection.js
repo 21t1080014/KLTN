@@ -37,7 +37,7 @@ function initQuickView() {
             `);
 						slides.push(`
               <div class="carousel-item ${active}">
-                <img src="/api/img/${img.url}" class="d-block w-100" alt="">
+                <img src="/api/img/${img.url}" class="d-block w-100" alt="${p.name || ''}">
               </div>
             `);
 					});
@@ -75,12 +75,12 @@ function initQuickView() {
 							.prop('disabled', true)
 							.text('Hết hàng')
 							.addClass('btn-secondary')
-							.removeClass('btn-dark');
+							.removeClass('btn-primary');
 					} else {
 						$('#qv-add-to-cart')
 							.prop('disabled', false)
 							.text('Thêm vào giỏ')
-							.addClass('btn-dark')
+							.addClass('btn-primary')
 							.removeClass('btn-secondary');
 					}
 					// Hiển thị modal
@@ -142,7 +142,7 @@ $(document).on('click', '.add-to-cart-btn', function(e) {
 	e.preventDefault();
 	const productId = $(this).data('id');
 	const name = $(this).closest('.product-card').find('.card-title').text();
-	const price = $(this).closest('.product-card').find('.text-danger').text();
+	const price = $(this).closest('.product-card').find('.price-current').text();
 	const img = $(this).closest('.product-card').find('img').attr('src');
 
 	let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -172,12 +172,12 @@ $(document).ready(function() {
 			let html = '';
 			res.data.brandsName.forEach(brand => {
 				html += `
-					<div class="form-check">
-						<input class="form-check-input brand-checkbox" 
-							   type="checkbox" 
-							   value="${brand.name}" 
+					<div class="flex items-center gap-2 py-1.5">
+						<input class="form-check-input brand-checkbox accent-charcoal w-4 h-4"
+							   type="checkbox"
+							   value="${brand.name}"
 							   id="brand-${brand.brandId}">
-						<label class="form-check-label" for="brand-${brand.brandId}">
+						<label class="form-check-label text-sm text-charcoal-soft cursor-pointer" for="brand-${brand.brandId}">
 							${brand.name}
 						</label>
 					</div>
@@ -193,12 +193,12 @@ $(document).ready(function() {
 			let html = '';
 			res.data.genders.forEach(gender => {
 				html += `
-					<div class="form-check">
-						<input class="form-check-input gender-checkbox" 
-							   type="checkbox" 
-							   value="${gender.code}" 
+					<div class="flex items-center gap-2 py-1.5">
+						<input class="form-check-input gender-checkbox accent-charcoal w-4 h-4"
+							   type="checkbox"
+							   value="${gender.code}"
 							   id="gender-${gender.code}">
-						<label class="form-check-label" for="gender-${gender.code}">
+						<label class="form-check-label text-sm text-charcoal-soft cursor-pointer" for="gender-${gender.code}">
 							${gender.display}
 						</label>
 					</div>
@@ -213,12 +213,12 @@ $(document).ready(function() {
 			let html = '';
 			res.data.segments.forEach(seg => {
 				html += `
-	        <div class="form-check">
-	          <input class="form-check-input segment-checkbox"
+	        <div class="flex items-center gap-2 py-1.5">
+	          <input class="form-check-input segment-checkbox accent-charcoal w-4 h-4"
 	                 type="checkbox"
 	                 value="${seg.code}"
 	                 id="segment-${seg.code}">
-	          <label class="form-check-label" for="segment-${seg.code}">
+	          <label class="form-check-label text-sm text-charcoal-soft cursor-pointer" for="segment-${seg.code}">
 	            ${seg.display}
 	          </label>
 	        </div>
@@ -231,12 +231,12 @@ $(document).ready(function() {
 	let priceHtml = '';
 	priceRanges.forEach((r, idx) => {
 		priceHtml += `
-				<div class="form-check">
-					<input class="form-check-input price-checkbox"
+				<div class="flex items-center gap-2 py-1.5">
+					<input class="form-check-input price-checkbox accent-charcoal w-4 h-4"
 						   type="checkbox"
 						   value="${idx}"
 						   id="price-${idx}">
-					<label class="form-check-label" for="price-${idx}">
+					<label class="form-check-label text-sm text-charcoal-soft cursor-pointer" for="price-${idx}">
 						${r.label}
 					</label>
 				</div>
@@ -428,7 +428,7 @@ function renderSelectedTags() {
 		const val = $(this).val();
 		const label = $(this).next('label').text();
 		$container.append(`
-			<span class="badge bg-dark text-white px-3 py-2 remove-tag"
+			<span class="badge remove-tag"
 			      data-type="brand"
 			      data-value="${val}">
 				${label} ✕
@@ -440,7 +440,7 @@ function renderSelectedTags() {
 		const val = $(this).val();
 		const label = $(this).next('label').text();
 		$container.append(`
-			<span class="badge bg-info text-white px-3 py-2 remove-tag"
+			<span class="badge remove-tag"
 			      data-type="gender"
 			      data-value="${val}">
 				${label} ✕
@@ -451,7 +451,7 @@ function renderSelectedTags() {
 		const val = $(this).val();
 		const label = $(this).next('label').text();
 		$container.append(`
-	    <span class="badge bg-warning text-white px-3 py-2 remove-tag"
+	    <span class="badge remove-tag"
 	          data-type="segment"
 	          data-value="${val}">
 	      ${label} ✕
@@ -462,7 +462,7 @@ function renderSelectedTags() {
 		const val = $(this).val();
 		const label = $(this).next('label').text();
 		$container.append(`
-		    <span class="badge bg-warning text-white px-3 py-2 remove-tag"
+		    <span class="badge remove-tag"
 		          data-type="price"
 		          data-value="${val}">
 		      ${label} ✕
@@ -471,7 +471,7 @@ function renderSelectedTags() {
 	});
 	if ($container.children().length > 0) {
 		$container.append(`
-			<span class="badge bg-secondary px-3 py-2" id="clearAllTags">Xóa hết ✕</span>
+			<span class="badge !bg-transparent !text-charcoal-muted border border-line" id="clearAllTags">Xóa hết ✕</span>
 		`);
 	}
 }

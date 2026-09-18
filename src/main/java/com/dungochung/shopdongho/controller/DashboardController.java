@@ -20,7 +20,7 @@ public class DashboardController {
 	@GetMapping
 	public String showDashboard(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/dashboard";
+		return "admin/dashboard";
 	}
 	@GetMapping("/api")
 	@ResponseBody

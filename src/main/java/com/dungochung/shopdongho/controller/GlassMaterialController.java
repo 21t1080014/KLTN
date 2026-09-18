@@ -25,7 +25,7 @@ public class GlassMaterialController {
 	@GetMapping
 	public String showGlassW(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/categories/WatchGlass";
+		return "admin/categories/watch-glass";
 	}
 
 	@GetMapping("/api")

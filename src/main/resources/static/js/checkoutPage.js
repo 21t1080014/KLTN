@@ -140,7 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		const isLoggedIn = document.body.dataset.loggedIn === "true";
 		if (!isLoggedIn) {
-			window.location.href = "/auth";
+			showConfirmation("<p>Bạn cần đăng nhập để đặt hàng.</p>", () => {
+				window.location.href = "/auth";
+			});
 			return;
 		}
 
@@ -175,10 +177,10 @@ document.addEventListener("DOMContentLoaded", () => {
 						msg += `<p>Bạn nhận voucher: <strong>${grantedVoucher}</strong></p>`;
 					}
 
-					// Hiện modal, sau OK mới xóa cart + redirect
+					// Hiện modal, sau OK mới xóa cart + chuyển đến trang lịch sử đơn hàng
 					showConfirmation(msg, () => {
 						localStorage.removeItem("cart");
-						window.location.href = "/checkout";
+						window.location.href = "/profile";
 					});
 
 				} else {

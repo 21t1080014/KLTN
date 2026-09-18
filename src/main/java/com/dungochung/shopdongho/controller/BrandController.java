@@ -32,7 +32,7 @@ public class BrandController {
 	@GetMapping
 	public String showBrand(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/Brand";
+		return "admin/brands";
 	}
 
 	@GetMapping("/api")

@@ -49,7 +49,7 @@ public class UserServiceImpl implements UserService {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Mật khẩu không đúng", 401);
 		}
 
-		if (!user.getRole().getRoleName().equals("customer")) {
+		if (!user.getRole().getRoleName().equals(Constant.ROLE_CUSTOMER)) {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Chỉ khách hàng được phép đăng nhập", 403);
 		}
 
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
 		user.setPasswordHash(hashedPassword);
 
 		// Gán role là customer
-		Optional<RoleEntity> roleOpt = roleReponsitory.findByRoleName("customer");
+		Optional<RoleEntity> roleOpt = roleReponsitory.findByRoleName(Constant.ROLE_CUSTOMER);
 		if (roleOpt.isEmpty()) {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Không tìm thấy vai trò customer", 500);
 		}

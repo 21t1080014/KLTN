@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	showCart();
 });
 
-function renderThumbnails(images) {
+function renderThumbnails(images, productName) {
 	const thumbnailContainer = document.getElementById("thumbnail-images");
 	thumbnailContainer.innerHTML = "";
 
@@ -30,6 +30,7 @@ function renderThumbnails(images) {
 		const img = document.createElement("img");
 		img.src = src;
 		img.className = "thumb";
+		img.alt = (productName || "Sản phẩm") + " - ảnh " + (index + 1);
 		img.onclick = () => {
 			currentImageIndex = index;
 			updateMainImage(src);
@@ -107,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 				// Hiển thị ảnh
 				const imageUrls = p.images.map(img => `/api/img/${img.url}`);
-				renderThumbnails(imageUrls);
+				renderThumbnails(imageUrls, p.name);
 				renderProductDetailTable(p);
 			}
 		});
@@ -226,6 +227,18 @@ document.querySelectorAll(".tab").forEach(tab => {
 document.addEventListener("DOMContentLoaded", () => {
 	const addToCartBtn = document.getElementById("add-to-cart-btn");
 	addToCartBtn.addEventListener("click", addToCart);
+
+	const buyNowBtn = document.getElementById("buy-now-btn");
+	if (buyNowBtn) {
+		buyNowBtn.addEventListener("click", () => {
+			if (availableQuantity === 0) {
+				alert("Sản phẩm hiện đã hết hàng.");
+				return;
+			}
+			addToCart();
+			window.location.href = "/checkout";
+		});
+	}
 });
 // Khi trang load, có thể set mặc định
 document.getElementById("detail").classList.add("active");

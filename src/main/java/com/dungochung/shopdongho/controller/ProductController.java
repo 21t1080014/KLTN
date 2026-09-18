@@ -61,7 +61,7 @@ public class ProductController {
 	@GetMapping
 	public String showProduct(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/Product";
+		return "admin/products";
 	}
 
 	@GetMapping("/api")

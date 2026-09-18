@@ -6,6 +6,9 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +23,23 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class FileStorageService {
 
+	// Chỉ cho phép upload các định dạng ảnh, tránh upload file thực thi/HTML gây XSS lưu trữ
+	private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList(".jpg", ".jpeg", ".png", ".gif",
+			".webp");
+
 	@Value("${upload.dir}")
 	private String uploadDir;
 
 	public ResponseEntity<Resource> getImageAsResponse(String fileName) {
 		try {
-			Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
+			Path baseDir = Paths.get(uploadDir).normalize();
+			Path filePath = baseDir.resolve(fileName).normalize();
+
+			// Chống path traversal: đảm bảo file nằm trong thư mục upload
+			if (!filePath.startsWith(baseDir)) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+			}
+
 			Resource resource = new UrlResource(filePath.toUri());
 
 			if (!resource.exists() || !resource.isReadable()) {
@@ -53,6 +67,15 @@ public class FileStorageService {
 			return null;
 
 		String originalFilename = file.getOriginalFilename();
+		String extension = "";
+		int dotIndex = originalFilename == null ? -1 : originalFilename.lastIndexOf('.');
+		if (dotIndex >= 0) {
+			extension = originalFilename.substring(dotIndex).toLowerCase(Locale.ROOT);
+		}
+		if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+			throw new IOException("Định dạng file không được hỗ trợ. Chỉ chấp nhận: " + ALLOWED_IMAGE_EXTENSIONS);
+		}
+
 		String sanitizedFilename = originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
 		String fileName = UUID.randomUUID().toString() + "_" + sanitizedFilename;
 

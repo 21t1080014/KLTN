@@ -1,0 +1,339 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-ivory text-charcoal-soft font-body antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading text-charcoal;
+  }
+  a {
+    @apply text-charcoal-soft;
+  }
+}
+
+@layer components {
+  /* CTA chính - dùng cho "Mua ngay", "Đặt hàng", submit form quan trọng */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-charcoal text-white text-sm
+      tracking-wide2 uppercase rounded-none hover:bg-gold-dark transition-colors duration-200;
+  }
+  /* CTA phụ - "Thêm vào giỏ" */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 border border-charcoal text-charcoal
+      text-sm tracking-wide2 uppercase rounded-none hover:bg-charcoal hover:text-white transition-colors duration-200;
+  }
+  /* Nút icon nhỏ (search, cart...) */
+  .btn-icon {
+    @apply inline-flex items-center justify-center w-10 h-10 border border-line rounded-full
+      text-charcoal hover:border-charcoal transition-colors duration-200;
+  }
+
+  .product-card {
+    @apply relative bg-white border border-line overflow-hidden;
+  }
+  .badge-sale {
+    @apply absolute top-3 left-3 bg-sale text-white text-xs px-2 py-1 tracking-wide2;
+  }
+  .price-current {
+    @apply text-charcoal font-heading text-lg;
+  }
+  .price-original {
+    @apply text-charcoal-muted text-sm line-through;
+  }
+
+  .section-heading {
+    @apply font-heading text-2xl md:text-3xl text-charcoal text-center tracking-wide2 mb-10;
+  }
+
+  .input-field {
+    @apply w-full border border-line px-4 py-3 text-charcoal-soft focus:outline-none focus:border-gold
+      transition-colors duration-200;
+  }
+  .label-field {
+    @apply block text-sm text-charcoal-muted mb-1;
+  }
+
+  /* Pagination do JS sinh (collection.js, search-shop.js, orderCustomer.js...) */
+  .pagination { @apply flex flex-wrap items-center gap-1 list-none; }
+  .page-item { @apply inline-block; }
+  .page-item.disabled .page-link { @apply opacity-40 pointer-events-none; }
+  .page-item.active .page-link { @apply bg-charcoal text-white border-charcoal; }
+  .page-link {
+    @apply inline-flex items-center justify-center min-w-[2.25rem] h-9 px-2 border border-line
+      text-sm text-charcoal-soft hover:border-charcoal transition-colors;
+  }
+
+  /* Tag/badge do JS sinh (filter đã chọn, voucher...) */
+  .badge {
+    @apply inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-charcoal text-white cursor-pointer;
+  }
+
+  /* JS (detail-product.js...) toggle 2 class này trực tiếp qua classList để báo còn/hết hàng */
+  .text-success { @apply text-emerald-700; }
+  .text-danger { @apply text-sale; }
+
+  /* Trang chi tiết sản phẩm */
+  .thumb {
+    @apply w-[60px] h-[60px] object-cover cursor-pointer border-2 border-transparent hover:border-gold transition-all;
+  }
+  .tab { @apply text-charcoal-muted; }
+  .tab.active { @apply text-charcoal border-b-2 border-charcoal; }
+  .tab-content { @apply hidden; }
+  .tab-content.active { @apply block; }
+  .table-detail td { @apply border border-line p-2; }
+  .table-detail td:first-child { @apply bg-ivory w-[30%] font-medium text-charcoal; }
+
+  /* Trang đăng nhập/đăng ký: JS (auth.js) toggle class "active" trực tiếp */
+  .toggle-btn { @apply w-1/2 py-3 text-sm tracking-wide2 uppercase text-charcoal-muted transition-colors; }
+  .toggle-btn.active { @apply bg-charcoal text-white; }
+
+  /* Toast thông báo (trang admin dùng new bootstrap.Toast(...)) */
+  .toast { @apply hidden max-w-xs w-full bg-white border border-line shadow-lg pointer-events-auto; }
+  .toast.show { @apply block; }
+  .toast-body { @apply flex-1 p-3 text-sm; }
+  .text-bg-success { @apply bg-emerald-700 text-white; }
+  .text-bg-danger { @apply bg-sale text-white; }
+
+  /* ============================================================
+     Shim cho các trang ADMIN: giữ nguyên markup/class Bootstrap gốc
+     trong HTML + JS (product.js, brand.js, voucher.js...), chỉ định
+     nghĩa lại CSS phía dưới bằng Tailwind để đổi giao diện đồng bộ mà
+     không phải sửa từng trang/JS (giảm rủi ro gãy chức năng CRUD).
+     ============================================================ */
+  .form-control, .form-select { @apply input-field; }
+  .form-label { @apply label-field; }
+
+  .table { @apply w-full text-sm bg-white; }
+  .table th { @apply text-left text-xs tracking-wide2 uppercase text-charcoal-muted border-b border-line px-4 py-3; }
+  .table td { @apply border-b border-line px-4 py-3 text-charcoal-soft align-middle; }
+  .table-bordered th, .table-bordered td { @apply border border-line; }
+
+  .alert { @apply px-4 py-3 text-sm border mb-3; }
+  .alert-danger { @apply bg-sale/10 border-sale text-sale; }
+  .alert-success { @apply bg-emerald-50 border-emerald-700 text-emerald-700; }
+
+  .card { @apply bg-white border border-line; }
+  .card-header { @apply border-b border-line px-4 py-3 text-sm tracking-wide2 uppercase text-charcoal; }
+  .card-body { @apply p-4; }
+  .card-title { @apply font-heading text-charcoal; }
+
+  /* Nút: base .btn + các biến thể màu, dùng đúng quy ước Bootstrap "btn btn-xxx" */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm border border-transparent
+      transition-colors duration-200 cursor-pointer;
+  }
+  .btn-sm { @apply px-3 py-1.5 text-xs; }
+  .btn-primary, .btn-success { @apply bg-charcoal text-white hover:bg-gold-dark; }
+  .btn-danger { @apply bg-sale text-white hover:opacity-90; }
+  .btn-warning { @apply bg-gold text-charcoal hover:bg-gold-dark hover:text-white; }
+  .btn-secondary, .btn-light { @apply bg-white text-charcoal border-line hover:bg-ivory; }
+  .btn-dark { @apply bg-charcoal text-white hover:bg-gold-dark; }
+  .btn-outline-primary, .btn-outline-secondary { @apply bg-transparent text-charcoal border-line hover:bg-ivory; }
+  .btn-outline-danger { @apply bg-transparent text-sale border-sale hover:bg-sale hover:text-white; }
+  .btn:disabled { @apply opacity-50 cursor-not-allowed; }
+
+  /* .badge đã định nghĩa ở trên (dùng cho tag storefront) — admin dùng lại class này luôn */
+  .rounded-pill { @apply rounded-full; }
+  .container { @apply w-full; }
+  .input-group { @apply flex; }
+  .input-group > .form-control { @apply flex-1; }
+
+  /* Bootstrap grid tối giản - đủ dùng cho form 2 cột trong modal admin (Brand/Product...) */
+  .row { @apply flex flex-wrap -mx-2; }
+  .row > [class*="col-"] { @apply px-2 w-full; }
+  .g-4 > [class*="col-"] { @apply mb-4; }
+  .col { @apply flex-1 px-2; min-width: 0; }
+  .col-auto { @apply w-auto flex-none; }
+  .col-12 { width: 100%; }
+  .col-6 { width: 50%; }
+  @media (min-width: 768px) {
+    .col-md-4 { width: 33.3333%; }
+    .col-md-5 { width: 41.6667%; }
+    .col-md-6 { width: 50%; }
+    .col-md-7 { width: 58.3333%; }
+    .col-md-8 { width: 66.6667%; }
+    .col-md-12 { width: 100%; }
+    .col-md { @apply flex-1; }
+  }
+  @media (min-width: 992px) {
+    .col-lg-4 { width: 33.3333%; }
+    .col-lg-6 { width: 50%; }
+  }
+  .modal-dialog.modal-lg { @apply max-w-2xl; }
+  .bg-danger { @apply bg-sale text-white; }
+  .list-group { @apply divide-y divide-line border border-line; }
+  .list-group-item { @apply px-4 py-3 bg-white; }
+  .border-end { @apply md:border-r border-line; }
+  .border-danger { @apply border-sale; }
+  .overlay {
+    @apply fixed inset-0 z-[1090] bg-charcoal/80 flex items-center justify-center;
+  }
+
+  /* Utility class Bootstrap cũ còn sót lại trong markup admin chưa viết lại toàn bộ -
+     quy về tên utility tương đương của Tailwind để không phải sửa từng chỗ */
+  .d-flex { @apply flex; }
+  .d-none { @apply hidden; }
+  .d-block { @apply block; }
+  .d-inline-block { @apply inline-block; }
+  .d-grid { @apply grid; }
+  .justify-content-between { @apply justify-between; }
+  .justify-content-center { @apply justify-center; }
+  .justify-content-end { @apply justify-end; }
+  .justify-content-start { @apply justify-start; }
+  .align-items-center { @apply items-center; }
+  .align-items-end { @apply items-end; }
+  .align-items-start { @apply items-start; }
+  .align-items-baseline { @apply items-baseline; }
+  .flex-grow-1 { @apply flex-1; }
+  .flex-column { @apply flex-col; }
+  .flex-shrink-0 { @apply shrink-0; }
+  .text-end { @apply text-right; }
+  .text-start { @apply text-left; }
+  .w-100 { @apply w-full; }
+  .w-50 { width: 50%; }
+  .w-75 { width: 75%; }
+  .h-100 { @apply h-full; }
+  .vh-100 { height: 100vh; }
+  .float-end { @apply float-right; }
+  .float-start { @apply float-left; }
+  .position-absolute { @apply absolute; }
+  .position-fixed { @apply fixed; }
+  .position-relative { @apply relative; }
+  .z-3 { z-index: 3; }
+  .text-uppercase { @apply uppercase; }
+  .text-capitalize { @apply capitalize; }
+  .fw-bold, .fw-semibold { @apply font-semibold; }
+  .fw-normal { @apply font-normal; }
+  .fs-4 { @apply text-2xl; }
+  .fs-5 { @apply text-xl; }
+  .small { @apply text-sm; }
+  .text-muted { @apply text-charcoal-muted; }
+  .text-primary { @apply text-charcoal; }
+  .bg-primary { @apply bg-charcoal text-white; }
+  .bg-light { @apply bg-ivory; }
+  .shadow { @apply shadow-md; }
+  .table-light { @apply bg-ivory; }
+  .img-fluid { @apply max-w-full h-auto; }
+  .form-check { @apply flex items-center gap-2; }
+  .form-check-input { @apply accent-charcoal w-4 h-4; }
+  .form-check-label { @apply text-sm text-charcoal-soft cursor-pointer; }
+  .table-hover tbody tr:hover { @apply bg-ivory; }
+  .table-responsive { @apply overflow-x-auto; }
+  .modal-dialog.modal-dialog-scrollable .modal-content { @apply max-h-[85vh] overflow-y-auto; }
+
+  /* ============================================================
+     "Bootstrap JS compatibility" — CSS tối thiểu để các component
+     điều khiển bằng bootstrap.bundle.min.js (KHÔNG dùng bootstrap CSS
+     nữa) vẫn hiển thị/hoạt động đúng: modal, offcanvas, dropdown,
+     collapse (navbar toggler), carousel. JS bootstrap chỉ toggle các
+     class dưới đây (fade/show/collapsing...) — phần định vị/animation
+     do các rule này đảm nhiệm thay cho bootstrap.min.css.
+     Xem CHANGES_FRONTEND_REDESIGN.md mục "Component JS-driven".
+     ============================================================ */
+
+  /* --- Collapse (navbar toggler mobile) --- */
+  .collapse:not(.show) { display: none; }
+  .collapsing {
+    @apply relative h-0 overflow-hidden;
+    transition: height .35s ease;
+  }
+
+  /* --- Modal --- */
+  .modal { @apply fixed inset-0 z-[1055] hidden outline-none overflow-y-auto; }
+  .modal.show { display: block; }
+  .modal.fade .modal-dialog { transition: transform .2s ease-out; transform: translateY(-30px); }
+  .modal.show .modal-dialog { transform: none; }
+  .modal-dialog {
+    @apply relative w-auto mx-auto my-8 max-w-lg;
+  }
+  .modal-dialog.modal-xl { @apply max-w-6xl; }
+  .modal-dialog.modal-dialog-centered {
+    @apply min-h-[calc(100%-4rem)] flex items-center my-0;
+  }
+  .modal-content {
+    @apply relative bg-white border border-line shadow-xl w-full;
+  }
+  .modal-header {
+    @apply flex items-center justify-between border-b border-line px-6 py-4;
+  }
+  .modal-title { @apply font-heading text-lg text-charcoal; }
+  .modal-body { @apply p-6; }
+  .modal-footer {
+    @apply flex justify-end gap-2 border-t border-line px-6 py-4;
+  }
+  .modal-backdrop {
+    @apply fixed inset-0 z-[1050] bg-charcoal;
+    opacity: 0;
+    transition: opacity .15s linear;
+  }
+  .modal-backdrop.show { opacity: .6; }
+  .btn-close {
+    @apply relative w-4 h-4 opacity-60 hover:opacity-100 transition-opacity;
+    background: transparent;
+  }
+  .btn-close::before {
+    content: "\2715";
+    @apply text-base leading-none;
+    color: inherit;
+  }
+
+  /* --- Offcanvas (cart drawer, sidebar mobile admin) --- */
+  .offcanvas {
+    @apply fixed top-0 bottom-0 z-[1045] flex flex-col bg-white shadow-xl w-[380px] max-w-[90vw];
+    visibility: hidden;
+    transition: transform .3s ease-in-out;
+  }
+  .offcanvas-end { @apply right-0; transform: translateX(100%); }
+  .offcanvas-start { @apply left-0; transform: translateX(-100%); }
+  .offcanvas.show, .offcanvas.showing { visibility: visible; transform: translateX(0); }
+  .offcanvas-header {
+    @apply flex items-center justify-between border-b border-line px-5 py-4;
+  }
+  .offcanvas-title { @apply font-heading text-lg text-charcoal; }
+  .offcanvas-body { @apply flex-1 overflow-y-auto p-5; }
+  .offcanvas-backdrop {
+    @apply fixed inset-0 z-[1040] bg-charcoal;
+    opacity: 0;
+    transition: opacity .15s linear;
+  }
+  .offcanvas-backdrop.show { opacity: .5; }
+
+  /* --- Dropdown (user menu) --- */
+  .dropdown-menu {
+    @apply hidden absolute z-[1000] min-w-[10rem] bg-white border border-line shadow-lg py-2 mt-1;
+  }
+  .dropdown-menu.show { display: block; }
+  .dropdown-menu-end { @apply right-0; }
+  .dropdown-item {
+    @apply block w-full text-left px-4 py-2 text-sm text-charcoal-soft hover:bg-ivory transition-colors;
+  }
+
+  /* --- Carousel (Quick View ảnh sản phẩm) --- */
+  .carousel { @apply relative; }
+  .carousel-inner { @apply relative w-full overflow-hidden; }
+  .carousel-item {
+    @apply hidden relative w-full;
+    transition: transform .6s ease-in-out;
+  }
+  .carousel-item.active { @apply block; }
+  .carousel-control-prev, .carousel-control-next {
+    @apply absolute top-0 bottom-0 flex items-center justify-center w-10 opacity-70 hover:opacity-100 transition-opacity;
+  }
+  .carousel-control-prev { @apply left-0; }
+  .carousel-control-next { @apply right-0; }
+  .carousel-control-prev-icon, .carousel-control-next-icon {
+    @apply inline-block w-6 h-6 border-t-2 border-charcoal;
+  }
+  .carousel-control-prev-icon { transform: rotate(-135deg); }
+  .carousel-control-next-icon { transform: rotate(45deg); }
+  .carousel-indicators {
+    @apply absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-10;
+  }
+  .carousel-indicators button {
+    @apply w-2 h-2 rounded-full bg-charcoal/30;
+  }
+  .carousel-indicators button.active { @apply bg-charcoal; }
+}

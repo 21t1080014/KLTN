@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import com.dungochung.shopdongho.common.constant.Constant;
+
 public class RoleInterceptor implements HandlerInterceptor {
 
 	@Override
@@ -25,27 +27,32 @@ public class RoleInterceptor implements HandlerInterceptor {
 
 		boolean isAuthorized = false;
 
-		if (uri.startsWith("/admin/products") && (role.equals("admin") || role.equals("product_staff"))) {
+		if (uri.startsWith("/admin/products")
+				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_PRODUCT_STAFF))) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/orders") && (role.equals("admin") || role.equals("support_staff"))) {
+		} else if (uri.startsWith("/admin/orders")
+				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_SUPPORT_STAFF))) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/inventory") && (role.equals("admin") || role.equals("warehouse_staff"))) {
+		} else if (uri.startsWith("/admin/inventory")
+				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/purchases") && (role.equals("admin") || role.equals("warehouse_staff"))) {
+		} else if (uri.startsWith("/admin/purchases")
+				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/users") && role.equals("admin")) {
+		} else if (uri.startsWith("/admin/users") && role.equals(Constant.ROLE_ADMIN)) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/brands") && role.equals("admin")) {
+		} else if (uri.startsWith("/admin/brands") && role.equals(Constant.ROLE_ADMIN)) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/categories") && role.equals("admin")) {
+		} else if (uri.startsWith("/admin/categories") && role.equals(Constant.ROLE_ADMIN)) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/promotions") && role.equals("admin")) {
+		} else if (uri.startsWith("/admin/promotions") && role.equals(Constant.ROLE_ADMIN)) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/voucher") && role.equals("admin")) {
+		} else if (uri.startsWith("/admin/voucher") && role.equals(Constant.ROLE_ADMIN)) {
 			isAuthorized = true;
-		} else if (uri.startsWith("/admin/reports") && role.equals("admin")) {
+		} else if (uri.startsWith("/admin/reports") && role.equals(Constant.ROLE_ADMIN)) {
 			isAuthorized = true;
 		} else if (uri.startsWith("/admin/dashboard")) {
+			// Mọi nhân viên đã đăng nhập đều xem được dashboard (giữ nguyên hành vi hiện tại)
 			isAuthorized = true;
 		}
 

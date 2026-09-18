@@ -25,7 +25,7 @@ public class StrapMaterialController {
 	@GetMapping
 	public String showStrapMaterial(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/categories/StrapMaterial";
+		return "admin/categories/strap-material";
 	}
 
 	@GetMapping("/api")

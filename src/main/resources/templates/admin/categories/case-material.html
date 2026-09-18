@@ -1,0 +1,92 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<div class="flex justify-between items-center mb-6">
+		<h4 class="font-heading text-xl text-charcoal">Chất liệu vỏ đồng hồ</h4>
+		<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#caseModal"
+			onclick="openAddCaseModal()">+ Thêm mới</button>
+	</div>
+
+	<form id="searchForm" class="input-group mb-4 gap-2">
+		<input type="text" id="searchKeyword" class="form-control" placeholder="Tìm chất liệu..."
+			onkeyup="searchCases()">
+		<button class="btn btn-outline-secondary" onclick="searchCases()">Tìm</button>
+	</form>
+
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>STT</th>
+				<th>Tên chất liệu</th>
+				<th>Hành động</th>
+			</tr>
+		</thead>
+		<tbody id="caseTableBody">
+			<!-- Nội dung render bằng JS -->
+		</tbody>
+	</table>
+
+	<nav>
+		<ul class="pagination mt-4" id="pagination">
+			<!-- Render phân trang bằng JS -->
+		</ul>
+	</nav>
+
+	<!-- Modal thêm/sửa -->
+	<div class="modal fade" id="caseModal" tabindex="-1" aria-labelledby="caseModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="caseForm">
+					<div class="modal-header">
+						<h5 class="modal-title" id="caseModalLabel">Thêm/Edit chất liệu vỏ</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" id="caseId">
+						<div class="mb-3">
+							<label for="caseName" class="form-label">Tên chất liệu</label>
+							<input type="text" class="form-control" id="caseName" required>
+						</div>
+						<div class="alert alert-danger hidden" id="caseError"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-success">Lưu</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Toast hiển thị lỗi -->
+	<div class="fixed top-4 right-4 z-[1080]">
+		<div id="errorToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="flex">
+				<div class="toast-body"></div>
+				<button type="button" class="btn-close !text-white me-2 m-auto" data-bs-dismiss="toast"
+					aria-label="Close"></button>
+			</div>
+		</div>
+	</div>
+	<!-- Modal xác nhận xóa -->
+	<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Xác nhận xóa</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">Bạn có chắc chắn muốn xóa chất liệu này không? Thao tác này không thể hoàn
+					tác.</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+					<button type="button" class="btn btn-danger" id="deleteConfirmBtn">Xóa</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/js/case-material.js"></script>
+</div>
+</html>

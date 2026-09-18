@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/storefront :: head('Sản phẩm')}"></head>
+<body>
+
+	<!-- Navbar -->
+	<div th:replace="~{layout/storefront :: navbar}"></div>
+
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-12">
+		<h1 class="section-heading">Sản phẩm</h1>
+
+		<div class="grid grid-cols-1 lg:grid-cols-4 gap-10">
+
+			<!-- Bộ lọc -->
+			<aside class="lg:col-span-1 space-y-3">
+				<div class="filter-section border border-line p-4">
+					<h5 class="toggle-filter flex items-center justify-between text-sm tracking-wide2 uppercase text-charcoal cursor-pointer"
+						data-target="#segment-filter">
+						Phân khúc <span class="toggle-icon">+</span>
+					</h5>
+					<div id="segment-filter" class="form-check-container mt-2" style="display: none;">
+						<!-- JS sẽ render checkbox phân khúc ở đây -->
+					</div>
+				</div>
+				<!-- Filter Giới tính -->
+				<div class="filter-section border border-line p-4">
+					<h5 class="toggle-filter flex items-center justify-between text-sm tracking-wide2 uppercase text-charcoal cursor-pointer"
+						data-target="#gender-filter">
+						Giới tính <span class="toggle-icon">+</span>
+					</h5>
+					<div id="gender-filter" class="form-check-container mt-2" style="display: none;">
+						<!-- JS sẽ render checkbox giới tính ở đây -->
+					</div>
+				</div>
+
+				<!-- Filter Thương hiệu -->
+				<div class="filter-section border border-line p-4">
+					<h5 class="toggle-filter flex items-center justify-between text-sm tracking-wide2 uppercase text-charcoal cursor-pointer"
+						data-target="#brand-filter">
+						Thương hiệu <span class="toggle-icon">+</span>
+					</h5>
+					<div id="brand-filter" class="form-check-container mt-2" style="display: none;">
+						<!-- JS sẽ render checkbox thương hiệu ở đây -->
+					</div>
+				</div>
+				<!-- Filter Giá -->
+				<div class="filter-section border border-line p-4">
+					<h5 class="toggle-filter flex items-center justify-between text-sm tracking-wide2 uppercase text-charcoal cursor-pointer"
+						data-target="#price-filter">
+						Lọc giá <span class="toggle-icon">+</span>
+					</h5>
+					<div id="price-filter" class="form-check-container mt-2" style="display: none;">
+						<!-- JS sẽ render các khoảng giá ở đây -->
+					</div>
+				</div>
+
+			</aside>
+
+			<!-- Danh sách sản phẩm -->
+			<div class="lg:col-span-3">
+
+				<!-- Tag và sắp xếp -->
+				<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+					<div class="flex items-center gap-2">
+						<label for="sort" class="text-sm text-charcoal-muted">Sắp xếp:</label>
+						<select id="sort" class="input-field !w-auto !py-2 text-sm">
+							<option>Mới nhất</option>
+							<option>Giá tăng dần</option>
+							<option>Giá giảm dần</option>
+						</select>
+					</div>
+					<div class="flex flex-wrap gap-2" id="selected-tags">
+						<!-- Tag filter sẽ hiển thị ở đây -->
+					</div>
+
+				</div>
+
+				<!-- Lưới sản phẩm -->
+				<div id="newestProducts" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+				<ul id="pagination" class="pagination justify-center mt-10"></ul>
+
+			</div>
+		</div>
+	</div>
+
+	<!-- Quick View Modal -->
+	<div th:replace="~{layout/quick-view-modal :: quickViewModal}"></div>
+	<!-- Cart Drawer -->
+	<div th:replace="~{layout/cart-drawer :: cartDrawer}"></div>
+	<div th:replace="~{layout/storefront :: footer}"></div>
+
+	<!-- Scripts -->
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="module" src="/js/collection.js"></script>
+
+</body>
+</html>

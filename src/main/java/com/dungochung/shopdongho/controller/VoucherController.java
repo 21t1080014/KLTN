@@ -27,7 +27,7 @@ public class VoucherController {
 	@GetMapping
 	public String showVoucher(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/voucher";
+		return "admin/vouchers";
 	}
 
 	@GetMapping("/api")

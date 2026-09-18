@@ -1,0 +1,71 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<div class="flex justify-between items-center mb-6">
+		<h4 class="font-heading text-xl text-charcoal">Mặt kính đồng hồ</h4>
+		<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#glassModal"
+			onclick="openAddGlassModal()">+ Thêm mới</button>
+	</div>
+
+	<form id="searchForm" class="input-group mb-4 gap-2">
+		<input type="text" id="searchKeyword" class="form-control" placeholder="Tìm loại mặt kính..."
+			onkeyup="searchTypes()">
+		<button class="btn btn-outline-secondary" onclick="searchTypes()">Tìm</button>
+	</form>
+
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>STT</th>
+				<th>Tên mặt kính</th>
+				<th>Hành động</th>
+			</tr>
+		</thead>
+		<tbody id="glassTableBody">
+			<!-- Nội dung được render bằng JS -->
+		</tbody>
+	</table>
+
+	<nav>
+		<ul class="pagination mt-4" id="pagination">
+			<!-- Phân trang render bằng JS -->
+		</ul>
+	</nav>
+
+	<!-- Modal thêm/sửa -->
+	<div class="modal fade" id="glassModal" tabindex="-1" aria-labelledby="glassModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="glassForm">
+					<div class="modal-header">
+						<h5 class="modal-title" id="glassModalLabel">Thêm/Edit mặt kính đồng hồ</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" id="glassId">
+						<div class="mb-3">
+							<label for="glassName" class="form-label">Tên mặt kính</label>
+							<input type="text" class="form-control" id="glassName" required>
+						</div>
+						<div class="alert alert-danger hidden" id="glassError"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-success">Lưu</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="fixed top-4 right-4 z-[1080]">
+		<div id="errorToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="flex">
+				<div class="toast-body"></div>
+				<button type="button" class="btn-close !text-white me-2 m-auto" data-bs-dismiss="toast"
+					aria-label="Close"></button>
+			</div>
+		</div>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/js/watch-glass.js"></script>
+</div>
+</html>

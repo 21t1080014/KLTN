@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+	<!-- ============ HEAD dùng chung ============
+	     Cách dùng ở từng trang:
+	     <head th:replace="~{layout/storefront :: head('Tiêu đề trang')}"></head>
+	-->
+	<head th:fragment="head(pageTitle)">
+		<meta charset="UTF-8" />
+		<title th:text="${pageTitle} + ' - TIKTAKUS'">TIKTAKUS</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+			rel="stylesheet" />
+		<link rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" />
+		<link rel="stylesheet" th:href="@{/css/output.css}" />
+	</head>
+
+	<!-- ============ NAVBAR dùng chung ============ -->
+	<nav th:fragment="navbar" class="sticky top-0 z-40 bg-ivory/95 backdrop-blur border-b border-line">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+			<div class="flex items-center justify-between h-20">
+
+				<!-- Toggler (mobile) -->
+				<button class="lg:hidden btn-icon" type="button" data-bs-toggle="collapse"
+					data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<i class="bi bi-list text-xl"></i>
+				</button>
+
+				<!-- Logo -->
+				<a href="/" class="font-heading text-2xl tracking-wide2 text-charcoal">TIKTAKUS</a>
+
+				<!-- Menu (desktop) -->
+				<div class="hidden lg:flex items-center gap-10">
+					<a href="/" class="text-sm tracking-wide2 uppercase text-charcoal-soft hover:text-gold-dark transition-colors">Trang chủ</a>
+					<a href="/collections" class="text-sm tracking-wide2 uppercase text-charcoal-soft hover:text-gold-dark transition-colors">Sản phẩm</a>
+				</div>
+
+				<!-- Icon group -->
+				<div class="flex items-center gap-3">
+					<button id="searchToggle" class="btn-icon" aria-label="Tìm kiếm">
+						<i class="bi bi-search"></i>
+					</button>
+
+					<a href="#" class="relative btn-icon" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"
+						onclick="showCart()" aria-label="Giỏ hàng">
+						<i class="bi bi-bag"></i>
+						<span id="cart-count"
+							class="absolute -top-1.5 -right-1.5 min-w-[1.25rem] h-5 px-1 flex items-center justify-center rounded-full bg-charcoal text-white text-[11px]">0</span>
+					</a>
+
+					<a href="/auth" class="btn-icon" th:if="${currentUser == null}" aria-label="Đăng nhập">
+						<i class="bi bi-person"></i>
+					</a>
+					<div class="relative" th:if="${currentUser != null}">
+						<button class="btn-icon" id="userDropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+							<i class="bi bi-person-fill"></i>
+						</button>
+						<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+							<li><span class="block px-4 py-2 text-xs text-charcoal-muted truncate" th:text="${currentUser.fullName}">Username</span></li>
+							<li><a class="dropdown-item" href="/profile">Thông tin cá nhân</a></li>
+							<li><a class="dropdown-item" href="/logout">Đăng xuất</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<!-- Menu mobile (collapse) -->
+			<div class="collapse lg:hidden" id="mainNavbar">
+				<div class="flex flex-col gap-1 pb-4">
+					<a href="/" class="px-2 py-2 text-sm tracking-wide2 uppercase text-charcoal-soft">Trang chủ</a>
+					<a href="/collections" class="px-2 py-2 text-sm tracking-wide2 uppercase text-charcoal-soft">Sản phẩm</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Hộp tìm kiếm -->
+		<div id="searchBox" class="absolute right-4 sm:right-6 lg:right-10 top-20 w-[calc(100%-2rem)] sm:w-96 bg-white border border-line shadow-lg p-4 z-50" style="display: none;">
+			<div class="text-center text-xs tracking-wide2 uppercase text-charcoal-muted mb-3">Tìm kiếm</div>
+			<form id="searchForm" action="/search-shop" method="get" class="flex gap-2 relative">
+				<input id="searchInput" class="input-field" type="search" name="keyword" placeholder="Tìm kiếm sản phẩm..." />
+				<button class="btn-icon shrink-0" type="submit" aria-label="Tìm">
+					<i class="bi bi-search"></i>
+				</button>
+			</form>
+			<div id="searchSuggestions" class="absolute left-4 right-4 mt-1 bg-white border border-line shadow-lg divide-y divide-line max-h-96 overflow-auto" style="display: none;"></div>
+		</div>
+	</nav>
+
+	<!-- ============ FOOTER dùng chung ============ -->
+	<footer th:fragment="footer" class="border-t border-line mt-24 bg-white">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-14 grid grid-cols-1 md:grid-cols-3 gap-10">
+			<div>
+				<div class="font-heading text-xl tracking-wide2 text-charcoal mb-3">TIKTAKUS</div>
+				<p class="text-sm text-charcoal-muted leading-relaxed">Đồng hồ chính hãng, tinh tuyển cho phong
+					cách sống tối giản và sang trọng.</p>
+			</div>
+			<div>
+				<div class="text-xs tracking-wide2 uppercase text-charcoal mb-3">Hỗ trợ</div>
+				<ul class="space-y-2 text-sm text-charcoal-muted">
+					<li>Hotline: 0974.79.2552</li>
+					<li>Giao hàng &amp; đổi trả</li>
+				</ul>
+			</div>
+			<div>
+				<div class="text-xs tracking-wide2 uppercase text-charcoal mb-3">Liên kết</div>
+				<ul class="space-y-2 text-sm text-charcoal-muted">
+					<li><a href="/" class="hover:text-gold-dark transition-colors">Trang chủ</a></li>
+					<li><a href="/collections" class="hover:text-gold-dark transition-colors">Sản phẩm</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="border-t border-line py-4 text-center text-xs text-charcoal-muted">
+			&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2026</span> TIKTAKUS. All
+			rights reserved.
+		</div>
+	</footer>
+
+</body>
+</html>

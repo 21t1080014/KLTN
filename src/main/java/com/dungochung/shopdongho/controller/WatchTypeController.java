@@ -25,7 +25,7 @@ public class WatchTypeController {
 	@GetMapping
 	public String showWatchType(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/categories/WatchType";
+		return "admin/categories/watch-type";
 	}
 
 	@GetMapping("/api")

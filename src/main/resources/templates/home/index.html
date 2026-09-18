@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/storefront :: head('Trang chủ')}"></head>
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/assets/owl.carousel.min.css">
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/assets/owl.theme.default.min.css">
+<body>
+
+	<!-- Navbar -->
+	<div th:replace="~{layout/storefront :: navbar}"></div>
+
+	<!-- Hero -->
+	<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-16 pb-20 text-center">
+		<p class="text-xs tracking-wide2 uppercase text-gold-dark mb-4">Bộ sưu tập mới</p>
+		<h1 class="font-heading text-3xl md:text-5xl text-charcoal leading-tight mb-6">Nghệ thuật của<br>thời
+			gian</h1>
+		<p class="text-charcoal-muted max-w-xl mx-auto mb-8">Đồng hồ chính hãng, tinh tuyển cho phong cách sống
+			tối giản và sang trọng.</p>
+		<a href="/collections" class="btn-primary">Khám phá ngay</a>
+	</section>
+
+	<!-- Main Content -->
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-4">
+		<section class="promotions mb-20">
+			<h2 class="section-heading">Khuyến mãi</h2>
+			<div id="promotionProducts" class="products-carousel owl-carousel">
+				<!-- JavaScript sẽ append sản phẩm khuyến mãi vào đây -->
+			</div>
+		</section>
+
+		<section class="new-arrivals mb-20">
+			<h2 class="section-heading">Hàng mới về</h2>
+			<div id="newestProducts" class="row row-cols-2 row-cols-md-5 g-3 grid grid-cols-2 md:grid-cols-5 gap-4">
+				<!-- JavaScript sẽ append các sản phẩm vào đây -->
+			</div>
+		</section>
+
+		<section class="min-h-[600px]">
+			<h2 class="section-heading">Sản phẩm nổi bật</h2>
+			<div class="flex justify-start gap-3 overflow-auto mb-8 pb-1" id="brandList"></div>
+			<div id="featuredProducts" class="row row-cols-2 row-cols-md-5 g-3 grid grid-cols-2 md:grid-cols-5 gap-4"></div>
+		</section>
+	</div>
+
+	<!-- Quick View Modal -->
+	<div th:replace="~{layout/quick-view-modal :: quickViewModal}"></div>
+	<div th:replace="~{layout/cart-drawer :: cartDrawer}"></div>
+	<div th:replace="~{layout/storefront :: footer}"></div>
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="module" src="/js/home-products.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/owl.carousel@2.3.4/dist/owl.carousel.min.js"></script>
+
+</body>
+</html>
