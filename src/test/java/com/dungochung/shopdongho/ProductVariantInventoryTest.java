@@ -65,7 +65,7 @@ class ProductVariantInventoryTest {
 	private GlassMaterialReponsitory glassRepo;
 
 	private MockHttpServletRequestBuilder admin(MockHttpServletRequestBuilder b) {
-		return b.sessionAttr("roleName", "admin");
+		return b.with(AdminAuth.as("admin"));
 	}
 
 	private String createProduct(String sku, String status, String price) throws Exception {

@@ -1,3 +1,6 @@
+const roleFlags = document.getElementById('roleFlags');
+const canEdit = !roleFlags || roleFlags.dataset.canEdit === 'true';
+const canDelete = !roleFlags || roleFlags.dataset.canDelete === 'true';
 const API_BASE = '/admin/inventory/api';
 let currentPage = 0, pageSize = 5;
 let lastSearch = {
@@ -86,9 +89,9 @@ function renderInventoryList(list) {
           <small>Tồn thực: ${inventory.quantity} · Đang giữ: ${inventory.reservedQuantity} · Có thể bán: ${inventory.availableQuantity} · Ngưỡng cảnh báo: ${inventory.lowStockThreshold}</small>
         </div>
         <div>
-          <button class="btn btn-sm btn-warning me-2" onclick="openEditModal('${inventory.variantId}')">Sửa</button>
+          ${canEdit ? `<button class="btn btn-sm btn-warning me-2" onclick="openEditModal('${inventory.variantId}')">Sửa</button>` : ''}
           <button class="btn btn-sm btn-secondary me-2" onclick="openHistory('${inventory.variantId}')">Lịch sử</button>
-          <button class="btn btn-sm btn-danger" onclick="confirmDelete('${inventory.variantId}')">Xóa</button>
+          ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="confirmDelete('${inventory.variantId}')">Xóa</button>` : ''}
         </div>
       </li>
     `;

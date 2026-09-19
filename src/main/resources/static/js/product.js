@@ -157,7 +157,7 @@ function renderProducts(products) {
 						<div>
 							<button class="btn btn-sm btn-secondary me-2" title="Biến thể" onclick="openVariantsModal('${p.productId}')"><i class="bi bi-layers"></i></button>
 							<button class="btn btn-sm btn-warning me-2" onclick="openEditProductModal('${p.productId}')"><i class="bi bi-pencil"></i></button>
-							<button class="btn btn-sm btn-danger me-2" onclick="deleteProduct('${p.productId}')"><i class="bi bi-trash"></i></button>
+							${document.body.dataset.role === 'admin' ? `<button class="btn btn-sm btn-danger me-2" onclick="deleteProduct('${p.productId}')"><i class="bi bi-trash"></i></button>` : ''}
 							<button class="btn btn-sm btn-info" onclick="viewProductDetails('${p.productId}')"><i class="bi bi-eye"></i></button>
 						</div>
 					</div>

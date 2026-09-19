@@ -31,7 +31,7 @@ class CategoryModuleTest {
 	private CategoryRepository categoryRepository;
 
 	private MockHttpServletRequestBuilder asAdmin(MockHttpServletRequestBuilder b) {
-		return b.sessionAttr("roleName", "admin");
+		return b.with(AdminAuth.as("admin"));
 	}
 
 	private int createCategory(String name, Integer parentId) throws Exception {
@@ -52,7 +52,7 @@ class CategoryModuleTest {
 
 	@Test
 	void nonAdminCannotAccess() throws Exception {
-		mockMvc.perform(get("/admin/categories").sessionAttr("roleName", "product_staff")).andExpect(status().is3xxRedirection());
+		mockMvc.perform(get("/admin/categories").with(AdminAuth.as("product_staff"))).andExpect(status().is3xxRedirection());
 	}
 
 	@Test
@@ -87,7 +87,7 @@ class CategoryModuleTest {
 	@Test
 	void productFormOptionsIncludeCategories() throws Exception {
 		createCategory("TEST-Option", null);
-		mockMvc.perform(get("/admin/products/api/form-options").sessionAttr("roleName", "admin")).andExpect(status().isOk())
+		mockMvc.perform(get("/admin/products/api/form-options").with(AdminAuth.as("admin"))).andExpect(status().isOk())
 				.andExpect(content().string(containsString("TEST-Option")));
 	}
 }

@@ -1,71 +1,73 @@
 package com.dungochung.shopdongho.config;
 
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.dungochung.shopdongho.common.AdminPermissions;
+import com.dungochung.shopdongho.entity.UserEntity;
+import com.dungochung.shopdongho.enums.UserStatus;
+import com.dungochung.shopdongho.repository.UserRepository;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.dungochung.shopdongho.common.constant.Constant;
-
+/**
+ * Kiểm soát truy cập /admin/**. Mỗi request:
+ * 1. Phải có phiên đăng nhập admin (session "userLogin").
+ * 2. Nạp lại tài khoản từ DB: bị khóa/xóa/hạ vai trò thì phiên đang mở mất hiệu lực NGAY (trước đây session vẫn dùng được
+ *    đến khi hết hạn) và role luôn lấy theo DB, không tin giá trị cũ trong session.
+ * 3. Đối chiếu ma trận {@link AdminPermissions} theo role + phương thức HTTP + đường dẫn.
+ * Không có quyền: gọi API (/api/, không phải GET) nhận JSON 401/403; trang HTML thì chuyển về đăng nhập / dashboard.
+ */
+@Component
 public class RoleInterceptor implements HandlerInterceptor {
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-
 		HttpSession session = request.getSession(false);
-		String role = (session != null) ? (String) session.getAttribute("roleName") : null;
-
-		// Nếu chưa đăng nhập
-		if (role == null) {
-			response.sendRedirect("/admin/login");
-			return false;
+		UserEntity sessionUser = session == null ? null : (UserEntity) session.getAttribute("userLogin");
+		if (sessionUser == null) {
+			return deny(request, response, 401, "/admin/login");
 		}
 
-		// Danh sách các path và quyền tương ứng
-		String uri = request.getRequestURI();
-
-		boolean isAuthorized = false;
-
-		if (uri.startsWith("/admin/products")
-				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_PRODUCT_STAFF))) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/orders")
-				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_SUPPORT_STAFF)
-						|| role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
-			// warehouse_staff vào được để đóng gói/giao hàng; quyền từng thao tác do OrderWorkflow kiểm tra ở service
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/customers")
-				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_SUPPORT_STAFF))) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/inventory")
-				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/purchases")
-				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/users") && role.equals(Constant.ROLE_ADMIN)) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/brands") && role.equals(Constant.ROLE_ADMIN)) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/categories") && role.equals(Constant.ROLE_ADMIN)) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/promotions") && role.equals(Constant.ROLE_ADMIN)) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/voucher") && role.equals(Constant.ROLE_ADMIN)) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/reports") && role.equals(Constant.ROLE_ADMIN)) {
-			isAuthorized = true;
-		} else if (uri.startsWith("/admin/dashboard")) {
-			// Mọi nhân viên đã đăng nhập đều xem được dashboard (giữ nguyên hành vi hiện tại)
-			isAuthorized = true;
+		UserEntity user = userRepository.findById(sessionUser.getUserId()).orElse(null);
+		if (user == null || user.getStatus() != UserStatus.ACTIVE || user.getRole() == null
+				|| !AdminPermissions.STAFF_ROLES.contains(user.getRole().getRoleName())) {
+			session.invalidate();
+			return deny(request, response, 401, "/admin/login");
 		}
 
-		if (!isAuthorized) {
-			response.sendRedirect("/admin/login");
-			return false;
-		}
+		String role = user.getRole().getRoleName();
+		session.setAttribute("roleName", role); // menu/UI luôn theo role hiện tại trong DB
+		session.setAttribute("username", user.getUsername());
 
+		if (!AdminPermissions.isAllowed(role, request.getMethod(), request.getRequestURI())) {
+			return deny(request, response, 403, "/admin/dashboard");
+		}
 		return true;
+	}
+
+	private boolean deny(HttpServletRequest request, HttpServletResponse response, int status, String redirectTo)
+			throws IOException {
+		String uri = request.getRequestURI();
+		boolean api = uri.contains("/api/") || uri.endsWith("/api") || !"GET".equalsIgnoreCase(request.getMethod());
+		if (api) {
+			response.setStatus(status);
+			response.setContentType("application/json;charset=UTF-8");
+			String msg = status == 401 ? "Phiên đăng nhập đã hết hạn hoặc tài khoản không còn hiệu lực"
+					: "Bạn không có quyền thực hiện thao tác này";
+			response.getWriter().write("{\"responseCode\":" + status + ",\"responseMsg\":\"" + msg + "\"}");
+		} else {
+			response.sendRedirect(redirectTo);
+		}
+		return false;
 	}
 }

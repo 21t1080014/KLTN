@@ -68,14 +68,14 @@ class CustomerModuleTest {
 	@Test
 	void listSupportsAllSortsFiltersAndSearch() throws Exception {
 		for (String sort : new String[] { "newest", "spent", "orders", "recent", "name", "bogus" }) {
-			mockMvc.perform(get("/admin/customers/api").sessionAttr("roleName", "support_staff").param("sort", sort))
+			mockMvc.perform(get("/admin/customers/api").with(AdminAuth.as("support_staff")).param("sort", sort))
 					.andExpect(status().isOk()).andExpect(jsonPath("$.responseCode").value(1))
 					.andExpect(jsonPath("$.data.customers").isArray());
 		}
-		mockMvc.perform(get("/admin/customers/api").sessionAttr("roleName", "admin").param("status", "LOCKED"))
+		mockMvc.perform(get("/admin/customers/api").with(AdminAuth.as("admin")).param("status", "LOCKED"))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.responseCode").value(1));
 		// tìm theo từ khóa có ký tự đặc biệt không được làm hỏng truy vấn
-		mockMvc.perform(get("/admin/customers/api").sessionAttr("roleName", "admin").param("keyword", "%_'\""))
+		mockMvc.perform(get("/admin/customers/api").with(AdminAuth.as("admin")).param("keyword", "%_'\""))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.responseCode").value(1))
 				.andExpect(jsonPath("$.data.totalCount").value(0));
 	}
@@ -102,7 +102,7 @@ class CustomerModuleTest {
 	void detailHasStatsAndNeverExposesPasswordHash() throws Exception {
 		UserEntity buyer = userRepository.findAll().stream().filter(u -> orderRepository.existsByUserId(u.getUserId())
 				&& "customer".equals(u.getRole().getRoleName())).findFirst().orElseThrow();
-		String body = mockMvc.perform(get("/admin/customers/api/" + buyer.getUserId()).sessionAttr("roleName", "support_staff"))
+		String body = mockMvc.perform(get("/admin/customers/api/" + buyer.getUserId()).with(AdminAuth.as("support_staff")))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.responseCode").value(1))
 				.andExpect(jsonPath("$.data.stats.orderCount").isNumber())
 				.andExpect(jsonPath("$.data.stats.tier").exists()).andExpect(jsonPath("$.data.orders").isArray())
@@ -111,7 +111,7 @@ class CustomerModuleTest {
 		// nhân viên không phải khách => không tra được qua API khách hàng
 		UserEntity staff = userRepository.findAll().stream().filter(u -> !"customer".equals(u.getRole().getRoleName()))
 				.findFirst().orElseThrow();
-		mockMvc.perform(get("/admin/customers/api/" + staff.getUserId()).sessionAttr("roleName", "admin"))
+		mockMvc.perform(get("/admin/customers/api/" + staff.getUserId()).with(AdminAuth.as("admin")))
 				.andExpect(jsonPath("$.responseCode").value(0));
 	}
 
@@ -177,15 +177,14 @@ class CustomerModuleTest {
 
 	@Test
 	void accessControlForCustomerAdmin() throws Exception {
-		mockMvc.perform(get("/admin/customers").sessionAttr("roleName", "support_staff")).andExpect(status().isOk());
-		mockMvc.perform(get("/admin/customers").sessionAttr("roleName", "admin")).andExpect(status().isOk());
+		mockMvc.perform(get("/admin/customers").with(AdminAuth.as("support_staff"))).andExpect(status().isOk());
+		mockMvc.perform(get("/admin/customers").with(AdminAuth.as("admin"))).andExpect(status().isOk());
 		for (String role : new String[] { "product_staff", "warehouse_staff" }) {
-			mockMvc.perform(get("/admin/customers/api").sessionAttr("roleName", role))
-					.andExpect(status().is3xxRedirection());
-			mockMvc.perform(put("/admin/customers/api/x/status").sessionAttr("roleName", role).param("to", "LOCKED")
-					.param("reason", "x")).andExpect(status().is3xxRedirection());
+			mockMvc.perform(get("/admin/customers/api").with(AdminAuth.as(role))).andExpect(status().isForbidden());
+			mockMvc.perform(put("/admin/customers/api/x/status").with(AdminAuth.as(role)).param("to", "LOCKED")
+					.param("reason", "x")).andExpect(status().isForbidden());
 		}
-		mockMvc.perform(get("/admin/customers/api")).andExpect(status().is3xxRedirection());
+		mockMvc.perform(get("/admin/customers/api")).andExpect(status().isUnauthorized());
 	}
 
 	// ---- bảo vệ tài khoản ở trang Người dùng ----
@@ -223,14 +222,11 @@ class CustomerModuleTest {
 
 	@Test
 	void cannotDeleteSelf() throws Exception {
-		UserEntity someone = userRepository.findAll().stream()
-				.filter(u -> !orderRepository.existsByUserId(u.getUserId()) && !"admin".equals(u.getRole().getRoleName()))
-				.findFirst().orElseThrow();
+		UserEntity me = userRepository.findFirstByRole_RoleNameAndStatus("admin", UserStatus.ACTIVE).orElseThrow();
 		mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-				.delete("/admin/users/api/" + someone.getUserId()).sessionAttr("roleName", "admin")
-				.sessionAttr("userLogin", someone)).andExpect(status().isOk())
+				.delete("/admin/users/api/" + me.getUserId()).with(AdminAuth.asUser(me))).andExpect(status().isOk())
 				.andExpect(jsonPath("$.responseCode").value(0));
-		assertTrue(userRepository.existsById(someone.getUserId()));
+		assertTrue(userRepository.existsById(me.getUserId()));
 	}
 
 	private com.dungochung.shopdongho.entity.OrderEntity order(String userId, String total,

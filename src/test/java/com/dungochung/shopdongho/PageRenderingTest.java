@@ -40,12 +40,12 @@ class PageRenderingTest {
 	@Test
 	void adminPagesRenderWithAdminSession() throws Exception {
 		String[] adminPaths = { "/admin/dashboard", "/admin/products", "/admin/brands", "/admin/inventory",
-				"/admin/promotions", "/admin/purchases", "/admin/orders", "/admin/customers", "/admin/voucher", "/admin/users",
+				"/admin/promotions", "/admin/purchases", "/admin/orders", "/admin/customers", "/admin/audit", "/admin/voucher", "/admin/users",
 				"/admin/categories/case-materials", "/admin/categories/strap-materials",
 				"/admin/categories/glass-materials", "/admin/categories/watch-types" };
 
 		for (String path : adminPaths) {
-			mockMvc.perform(get(path).sessionAttr("roleName", "admin").sessionAttr("username", "TestAdmin"))
+			mockMvc.perform(get(path).with(AdminAuth.as("admin")).sessionAttr("username", "TestAdmin"))
 					.andExpect(status().isOk());
 		}
 	}

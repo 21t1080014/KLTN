@@ -31,6 +31,9 @@ import com.dungochung.shopdongho.service.StockService;
 @Service
 @Transactional
 public class InventoryServiceImpl implements InventoryService {
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.dungochung.shopdongho.service.AuditService auditService;
+
 	@Autowired
 	private InventoryRepository inventoryRepository;
 	@Autowired
@@ -160,6 +163,8 @@ public class InventoryServiceImpl implements InventoryService {
 					"Chỉ xóa được dòng tồn kho khi số lượng = 0 và không giữ hàng cho đơn nào");
 		}
 		inventoryRepository.delete(inv);
+		auditService.log("INVENTORY_DELETE", "INVENTORY", String.valueOf(inv.getInventoryId()), "variant="
+				+ (inv.getVariant() == null ? null : inv.getVariant().getSku()));
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Xóa tồn kho thành công");
 	}
 

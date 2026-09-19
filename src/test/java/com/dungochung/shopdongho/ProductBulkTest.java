@@ -48,7 +48,7 @@ class ProductBulkTest {
 	private InventoryRepository inventoryRepository;
 
 	private MockHttpServletRequestBuilder admin(MockHttpServletRequestBuilder b) {
-		return b.sessionAttr("roleName", "admin");
+		return b.with(AdminAuth.as("admin"));
 	}
 
 	private ProductEntity anyProduct() {

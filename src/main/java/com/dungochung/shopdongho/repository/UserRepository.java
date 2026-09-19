@@ -15,6 +15,8 @@ public interface UserRepository extends JpaRepository<UserEntity, String>, UserR
 
 	boolean existsByEmail(String email);
 
+	Optional<UserEntity> findFirstByRole_RoleNameAndStatus(String roleName, com.dungochung.shopdongho.enums.UserStatus status);
+
 	long countByRole_RoleNameAndStatus(String roleName, com.dungochung.shopdongho.enums.UserStatus status);
 
 	Optional<UserEntity> findByUsernameOrEmail(String username, String email);

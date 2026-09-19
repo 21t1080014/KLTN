@@ -78,7 +78,7 @@ async function loadVariants() {
 			<td>
 				<button class="btn btn-sm btn-warning" onclick='editVariant(${JSON.stringify(v)})'>Sửa</button>
 				${v.default || v.status !== 'ACTIVE' ? '' : `<button class="btn btn-sm btn-outline-primary" onclick="makeDefault(${v.variantId})">Đặt mặc định</button>`}
-				${v.default ? '' : `<button class="btn btn-sm btn-danger" onclick="deleteVariant(${v.variantId})">Xóa</button>`}
+				${v.default || document.body.dataset.role !== 'admin' ? '' : `<button class="btn btn-sm btn-danger" onclick="deleteVariant(${v.variantId})">Xóa</button>`}
 			</td>
 		</tr>`).join('');
 	$('#variantsBody').html(rows);

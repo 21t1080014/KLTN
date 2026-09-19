@@ -56,6 +56,9 @@ import com.dungochung.shopdongho.service.ProductService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.dungochung.shopdongho.service.AuditService auditService;
+
 	@Autowired
 	private ProductRepository productRepository;
 	@Autowired
@@ -306,6 +309,7 @@ public class ProductServiceImpl implements ProductService {
 		productRepository.saveAndFlush(product);
 		variantRepository.deleteAll(variantRepository.findByProduct_ProductIdOrderBySortOrderAscVariantIdAsc(productId));
 		productRepository.delete(product);
+		auditService.log("PRODUCT_DELETE", "PRODUCT", productId, "sku=" + product.getSku() + ", name=" + product.getName());
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Product deleted successfully", null);
 	}
 

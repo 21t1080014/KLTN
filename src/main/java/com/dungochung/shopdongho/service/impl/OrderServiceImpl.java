@@ -94,6 +94,9 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private TransactionTemplate transactionTemplate;
 
+	@Autowired
+	private com.dungochung.shopdongho.service.AuditService auditService;
+
 	// ------------------------------------------------------------------ tạo đơn
 
 	@Override
@@ -717,6 +720,7 @@ public class OrderServiceImpl implements OrderService {
 			orderItemRepository.deleteAll(orderItemRepository.findByOrder(order));
 			orderRepository.delete(order);
 			addHistory(orderId, OrderHistoryKind.STATUS, OrderStatus.pending.name(), "DELETED", "Xóa đơn", actor);
+			auditService.log("ORDER_DELETE", "ORDER", String.valueOf(orderId), "total=" + order.getTotalPrice());
 			return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Xóa đơn hàng thành công", orderId);
 		}
 		return fail("Chỉ được xóa đơn hàng chưa thanh toán và đang chờ xử lý. Các đơn khác hãy dùng chức năng Hủy đơn.");

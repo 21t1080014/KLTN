@@ -32,6 +32,9 @@ import com.dungochung.shopdongho.service.UserService;
 
 @Service
 public class UserServiceImpl implements UserService {
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.dungochung.shopdongho.service.AuditService auditService;
+
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -152,6 +155,8 @@ public class UserServiceImpl implements UserService {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Image upload failed", 500);
 		}
 		userRepository.save(user);
+		auditService.log("USER_CREATE", "USER", user.getUserId(), "username=" + user.getUsername() + ", role="
+				+ (user.getRole() == null ? null : user.getRole().getRoleName()) + ", status=" + user.getStatus());
 
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "User created successfully", user);
 	}
@@ -179,6 +184,8 @@ public class UserServiceImpl implements UserService {
 					"Đây là quản trị viên hoạt động cuối cùng, không thể đổi vai trò hoặc khóa", 400);
 		}
 		UserStatus oldStatus = user.getStatus();
+		String oldRoleName = user.getRole() == null ? null : user.getRole().getRoleName();
+		boolean passwordChanged = updatedUser.getPasswordHash() != null && !updatedUser.getPasswordHash().isEmpty();
 		user.setFullName(updatedUser.getFullName());
 		user.setPhone(updatedUser.getPhone());
 		if (updatedUser.getPasswordHash() != null && !updatedUser.getPasswordHash().isEmpty()) {
@@ -219,6 +226,17 @@ public class UserServiceImpl implements UserService {
 			statusHistoryRepository.save(h);
 		}
 		userRepository.save(user);
+		StringBuilder diff = new StringBuilder("username=").append(user.getUsername());
+		if (roleChanged) {
+			diff.append(", role: ").append(oldRoleName).append(" -> ").append(user.getRole().getRoleName());
+		}
+		if (statusChanged) {
+			diff.append(", status: ").append(oldStatus).append(" -> ").append(user.getStatus());
+		}
+		if (passwordChanged) {
+			diff.append(", đổi mật khẩu");
+		}
+		auditService.log("USER_UPDATE", "USER", userId, diff.toString());
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "User updated successfully", user);
 	}
 
@@ -242,6 +260,8 @@ public class UserServiceImpl implements UserService {
 		try {
 			userRepository.deleteById(userId);
 			userRepository.flush();
+			auditService.log("USER_DELETE", "USER", userId, "username=" + target.getUsername() + ", role="
+					+ (target.getRole() == null ? null : target.getRole().getRoleName()));
 		} catch (org.springframework.dao.DataIntegrityViolationException e) {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL,
 					"Tài khoản còn dữ liệu liên quan (đấu giá, ký gửi...) nên không thể xóa. Hãy khóa tài khoản.", 400);

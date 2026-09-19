@@ -37,6 +37,9 @@ import com.dungochung.shopdongho.service.PurchaseEntriesService;
 
 @Service
 public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.dungochung.shopdongho.service.AuditService auditService;
+
 	@Autowired
 	private PurchaseEntriesRepository entriesRepository;
 	@Autowired
@@ -95,6 +98,8 @@ public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
 		}
 
 		entriesRepository.delete(entry);
+		auditService.log("PURCHASE_DELETE", "PURCHASE", String.valueOf(id), "product="
+				+ entry.getProduct().getProductId() + ", quantity=" + entry.getQuantity());
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Purchase Entry deleted successfully");
 	}
 

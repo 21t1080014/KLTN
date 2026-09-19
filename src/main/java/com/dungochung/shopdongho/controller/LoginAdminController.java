@@ -19,6 +19,9 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/admin/login")
 public class LoginAdminController {
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.dungochung.shopdongho.service.AuditService auditService;
+
 
 	@Autowired
 	private UserService userService;
@@ -38,6 +41,13 @@ public class LoginAdminController {
 		if (response.getResponseCode() == 1) {
 			UserEntity user = (UserEntity) response.getData();
 
+			// Tài khoản bị khóa / chưa kích hoạt không được vào khu quản trị
+			if (user.getStatus() != com.dungochung.shopdongho.enums.UserStatus.ACTIVE) {
+				auditService.logAs(username, user.getRole().getRoleName(), "LOGIN_BLOCKED", "USER", user.getUserId(),
+						"Tài khoản " + user.getStatus());
+				model.addAttribute("error", "Tài khoản đã bị khóa hoặc chưa được kích hoạt.");
+				return "admin/login";
+			}
 			// Chỉ cho phép đăng nhập admin hoặc nhân viên
 			String roleName = user.getRole().getRoleName();
 			if (roleName.equals(Constant.ROLE_ADMIN) || roleName.equals(Constant.ROLE_PRODUCT_STAFF)
@@ -49,13 +59,18 @@ public class LoginAdminController {
 				session.setAttribute("userLogin", user);
 				session.setAttribute("roleName", roleName);
 				session.setAttribute("username", user.getUsername());
+				auditService.logAs(user.getUsername(), roleName, "LOGIN_SUCCESS", "USER", user.getUserId(), null);
 				return "redirect:/admin/dashboard";
 			} else {
+				auditService.logAs(username, roleName, "LOGIN_BLOCKED", "USER", user.getUserId(),
+						"Không phải tài khoản nhân viên");
 				model.addAttribute("error", "Bạn không có quyền truy cập trang quản trị.");
 				return "admin/login";
 			}
 		} else {
-			model.addAttribute("error", response.getResponseMsg());
+			auditService.logAs(username, null, "LOGIN_FAILED", "USER", null, null);
+			// Thông báo chung để không lộ tên đăng nhập nào tồn tại
+			model.addAttribute("error", "Sai tên đăng nhập hoặc mật khẩu.");
 			return "admin/login";
 		}
 	}

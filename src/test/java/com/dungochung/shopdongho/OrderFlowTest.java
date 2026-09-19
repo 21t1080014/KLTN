@@ -367,27 +367,26 @@ class OrderFlowTest {
 	@Test
 	void adminEndpointsWorkAndLegacyPutIsValidated() throws Exception {
 		int id = createViaApi(customer, 1, "COD");
-		mockMvc.perform(put("/admin/orders/api/" + id + "/status").sessionAttr("roleName", "support_staff")
-				.sessionAttr("userLogin", customer).param("to", "confirmed")).andExpect(status().isOk())
+		mockMvc.perform(put("/admin/orders/api/" + id + "/status").with(AdminAuth.as("support_staff")).param("to", "confirmed")).andExpect(status().isOk())
 				.andExpect(jsonPath("$.responseCode").value(1));
 		// API cũ: nhảy cóc bị từ chối
-		mockMvc.perform(put("/admin/orders/api/" + id).sessionAttr("roleName", "admin").param("orderStatus", "completed")
+		mockMvc.perform(put("/admin/orders/api/" + id).with(AdminAuth.as("admin")).param("orderStatus", "completed")
 				.param("paymentStatus", "paid")).andExpect(jsonPath("$.responseCode").value(0));
 		assertEquals(OrderStatus.confirmed, order(id).getOrderStatus());
-		mockMvc.perform(get("/admin/orders/api/" + id).sessionAttr("roleName", "warehouse_staff"))
+		mockMvc.perform(get("/admin/orders/api/" + id).with(AdminAuth.as("warehouse_staff")))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.data.allowedNext[0]").value("packing"))
 				.andExpect(jsonPath("$.data.history.length()").value(2))
 				.andExpect(jsonPath("$.data.items[0].productName").exists());
-		mockMvc.perform(get("/admin/orders/api").sessionAttr("roleName", "support_staff").param("status", "confirmed"))
+		mockMvc.perform(get("/admin/orders/api").with(AdminAuth.as("support_staff")).param("status", "confirmed"))
 				.andExpect(status().isOk()).andExpect(jsonPath("$.responseCode").value(1));
 	}
 
 	@Test
 	void productStaffCannotAccessOrderAdmin() throws Exception {
-		mockMvc.perform(get("/admin/orders/api").sessionAttr("roleName", "product_staff"))
-				.andExpect(status().is3xxRedirection());
-		mockMvc.perform(put("/admin/orders/api/1/status").sessionAttr("roleName", "product_staff").param("to", "confirmed"))
-				.andExpect(status().is3xxRedirection());
+		mockMvc.perform(get("/admin/orders/api").with(AdminAuth.as("product_staff")))
+				.andExpect(status().isForbidden());
+		mockMvc.perform(put("/admin/orders/api/1/status").with(AdminAuth.as("product_staff")).param("to", "confirmed"))
+				.andExpect(status().isForbidden());
 	}
 
 	@Test

@@ -16,7 +16,9 @@
   Silver (mặc định) → Gold ≥ 20.000.000₫ → Diamond ≥ 100.000.000₫ (cấu hình ở `application.properties`:
   `shop.tier.gold-min-spend`, `shop.tier.diamond-min-spend`). Tên hạng khớp bảng `membership_levels` sẵn có.
 - **Khách bị khóa không đặt hàng được** ngay cả khi session cũ còn sống: `createOrder` kiểm tra lại trạng thái trong DB.
-  (Đăng nhập của khách bị khóa vốn đã bị chặn.)
+  **Đính chính (phát hiện ở Module 5):** khác với ghi chú ban đầu, đăng nhập storefront của khách bị khóa KHÔNG hề bị chặn
+  (`AuthController` gọi `login()` chung, không kiểm tra trạng thái/vai trò). Đã sửa ở Module 5 (`05-permissions.md`): dùng
+  `loginCustomer()` — chặn tài khoản khóa/chưa kích hoạt và tài khoản nhân viên.
 - **Bảo vệ tài khoản ở trang Người dùng** (`UserServiceImpl`):
   - Không xóa được tài khoản **đã có đơn hàng** (trước đây FK RESTRICT làm nổ 500; nay báo rõ "hãy khóa thay vì xóa"); lỗi FK
     khác (đấu giá/ký gửi…) cũng trả thông báo thân thiện.
@@ -72,13 +74,13 @@ không sửa/xóa cột cũ, không cần migrate dữ liệu.
    được, ghi chú giới hạn độ dài và không lộ ra API của khách, phân quyền (product/warehouse bị chặn), không xóa khách có đơn,
    không tự xóa, không xóa/khóa admin cuối cùng.
 2. Thủ công: đăng nhập admin/support → menu **Khách hàng** → tìm "abc" → **Hồ sơ** → xem thống kê + link sang đơn; thử khóa không
-   nhập lý do (bị chặn) rồi khóa có lý do → đăng nhập storefront bằng tài khoản đó sẽ bị từ chối; mở khóa lại.
+   nhập lý do (bị chặn) rồi khóa có lý do → đăng nhập storefront bằng tài khoản đó sẽ bị từ chối (sau khi có sửa ở Module 5); mở khóa lại.
 
 ## Việc còn thiếu
 - **Chưa có chương trình điểm thưởng / ưu đãi theo hạng**: hạng hiện chỉ để hiển thị/phân loại. Bảng `loyalty_points`/`user_membership`
   chưa dùng; nếu triển khai điểm thật cần thiết kế riêng (tích điểm khi đơn hoàn thành, trừ khi hoàn/hủy, ưu đãi theo hạng).
-- Session của **khách bị khóa** vẫn xem được trang cá nhân đến khi hết phiên (chỉ chặn đặt hàng); **nhân viên bị khóa** cũng
-  chưa bị đá khỏi phiên đang mở — sẽ xử lý ở Module 5 (kiểm tra trạng thái ở `RoleInterceptor`).
+- Session của **khách bị khóa** vẫn xem được trang cá nhân đến khi hết phiên (chỉ chặn đặt hàng). **Nhân viên bị khóa** thì
+  đã bị thu hồi phiên ngay ở request kế tiếp (đã làm ở Module 5, `RoleInterceptor` nạp lại tài khoản từ DB).
 - Chưa có xuất CSV danh sách khách, gộp tài khoản trùng, xóa/ẩn danh dữ liệu cá nhân theo yêu cầu (GDPR-like).
 - Chưa có địa chỉ giao hàng nhiều địa chỉ / sổ địa chỉ (chỉ 1 chuỗi `address`).
 - Validation dữ liệu đăng ký (email/SĐT hợp lệ, độ mạnh mật khẩu) vẫn chưa làm (mục "cần hỏi" trong audit).

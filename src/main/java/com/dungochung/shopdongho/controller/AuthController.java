@@ -36,14 +36,18 @@ public class AuthController {
 	@PostMapping("/login")
 	public String handleLogin(@RequestParam String usernameOrEmail, @RequestParam String password,
 			HttpServletRequest request, RedirectAttributes redirectAttributes) {
-		ResponseDataDto response = userService.login(usernameOrEmail, password);
+		ResponseDataDto response = userService.loginCustomer(usernameOrEmail, password);
 		if (response.getResponseCode() == Constant.RESULT_CD_SUCCESS) {
 			// Đổi session id sau khi đăng nhập thành công để tránh session fixation
 			request.changeSessionId();
 			request.getSession().setAttribute("currentUser", response.getData());
 			return "redirect:/";
 		}
-		redirectAttributes.addFlashAttribute("message", response.getResponseMsg());
+		// Sai tài khoản/mật khẩu dùng thông báo chung để không lộ tài khoản nào tồn tại (khóa/chưa kích hoạt vẫn báo rõ)
+		Object detail = response.getData();
+		boolean badCredentials = Integer.valueOf(404).equals(detail) || Integer.valueOf(401).equals(detail);
+		redirectAttributes.addFlashAttribute("message",
+				badCredentials ? "Sai tên đăng nhập hoặc mật khẩu." : response.getResponseMsg());
 		return "redirect:/auth";
 	}
 

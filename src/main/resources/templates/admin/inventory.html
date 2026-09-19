@@ -1,6 +1,10 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
 <div th:fragment="content">
 	<h1 class="font-heading text-2xl text-charcoal mb-6">Quản lý Tồn kho</h1>
+	<!-- Quyền theo role (server quyết định thật ở RoleInterceptor; đây chỉ để ẩn nút không dùng được) -->
+	<div id="roleFlags" class="hidden"
+		th:attr="data-can-edit=${session.roleName=='admin' or session.roleName=='warehouse_staff'},data-can-delete=${session.roleName=='admin' or session.roleName=='warehouse_staff'}"></div>
+	<p th:if="${session.roleName=='product_staff'}" class="text-sm text-charcoal-muted mb-4">Bạn chỉ có quyền xem tồn kho. Kiểm kê/điều chỉnh do kho thực hiện.</p>
 	<form id="searchForm" class="row g-2 items-end mb-6">
 		<!-- Tìm tên sản phẩm -->
 		<div class="col-md">
