@@ -214,6 +214,7 @@ async function openEditProductModal(id) {
 				return $(this).text().trim() === p[`${field.replace('Id', 'Name')}`];
 			}).prop('selected', true);
 		});
+		$('#categoryId').val(p.categoryId || '');
 		selectedFiles = (p.images || []).map(img => ({
 			isNew: false,
 			url: `${API_BASE}/img/${img.url}`,
@@ -366,6 +367,7 @@ async function loadFormOptions() {
 		populateSelect('#caseMaterialId', opts.caseMaterials, 'caseMaterialId', 'name');
 		populateSelect('#strapMaterialId', opts.strapMaterials, 'strapMaterialId', 'name');
 		populateSelect('#glassMaterialId', opts.glassMaterials, 'glassMaterialId', 'name');
+		populateSelect('#categoryId', opts.categories || [], 'categoryId', 'name');
 
 		populateEnumSelect('#condition', opts.conditions);
 		populateEnumSelect('#gender', opts.genders);

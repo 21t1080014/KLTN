@@ -132,4 +132,6 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 			""")
 	List<ProductEntity> findWithPromotionsAndImagesByBrandAndSegment(@Param("brandId") int brandId,
 			@Param("segment") Segment segment);
+
+	long countByCategory_CategoryId(Integer categoryId);
 }

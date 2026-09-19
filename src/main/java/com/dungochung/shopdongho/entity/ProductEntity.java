@@ -52,6 +52,11 @@ public class ProductEntity {
 	@JoinColumn(name = "glass_material_id", foreignKey = @ForeignKey(name = "fk_products_glass_material"))
 	private GlassMaterialEntity glassMaterial;
 
+	// Danh mục đa cấp (nullable - sản phẩm cũ chưa gán danh mục vẫn hợp lệ)
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_products_category"))
+	private CategoryEntity category;
+
 	@Column(name = "origin", length = 100)
 	private String origin;
 
@@ -217,6 +222,14 @@ public class ProductEntity {
 
 	public void setGlassMaterial(GlassMaterialEntity glassMaterial) {
 		this.glassMaterial = glassMaterial;
+	}
+
+	public CategoryEntity getCategory() {
+		return category;
+	}
+
+	public void setCategory(CategoryEntity category) {
+		this.category = category;
 	}
 
 	public String getOrigin() {

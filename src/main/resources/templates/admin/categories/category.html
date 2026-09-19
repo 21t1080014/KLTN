@@ -1,0 +1,93 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<div class="flex justify-between items-center mb-6">
+		<h4 class="font-heading text-xl text-charcoal">Danh mục sản phẩm (đa cấp)</h4>
+		<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal"
+			onclick="openAddCategoryModal()">+ Thêm mới</button>
+	</div>
+
+	<form id="searchForm" class="input-group mb-4 gap-2">
+		<input type="text" id="searchKeyword" class="form-control" placeholder="Tìm danh mục..." onkeyup="searchCategories()">
+		<button class="btn btn-outline-secondary" onclick="searchCategories()">Tìm</button>
+	</form>
+
+	<!-- Cây danh mục (xem nhanh quan hệ cha-con) -->
+	<div class="card mb-4">
+		<div class="card-header">Cây danh mục</div>
+		<div class="card-body" id="categoryTree">
+			<!-- JS render -->
+		</div>
+	</div>
+
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Tên danh mục</th>
+				<th>Danh mục cha</th>
+				<th>Mô tả</th>
+				<th>Hành động</th>
+			</tr>
+		</thead>
+		<tbody id="categoryTableBody">
+			<!-- Nội dung render bằng JS -->
+		</tbody>
+	</table>
+
+	<nav>
+		<ul class="pagination mt-4" id="pagination">
+			<!-- Render phân trang bằng JS -->
+		</ul>
+	</nav>
+
+	<!-- Modal thêm/sửa -->
+	<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form id="categoryForm">
+					<div class="modal-header">
+						<h5 class="modal-title" id="categoryModalLabel">Thêm/Sửa danh mục</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" id="categoryId">
+						<div class="mb-3">
+							<label for="categoryName" class="form-label">Tên danh mục</label>
+							<input type="text" class="form-control" id="categoryName" required>
+						</div>
+						<div class="mb-3">
+							<label for="categoryParent" class="form-label">Danh mục cha (để trống nếu là danh mục gốc)</label>
+							<select class="form-select" id="categoryParent">
+								<option value="">-- Không có (danh mục gốc) --</option>
+							</select>
+						</div>
+						<div class="mb-3">
+							<label for="categoryDescription" class="form-label">Mô tả</label>
+							<textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+						</div>
+						<div class="alert alert-danger hidden" id="categoryError"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-success">Lưu</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Toast hiển thị lỗi -->
+	<div class="fixed top-4 right-4 z-[1080]">
+		<div id="errorToast" class="toast text-bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+			<div class="flex">
+				<div class="toast-body"></div>
+				<button type="button" class="btn-close !text-white me-2 m-auto" data-bs-dismiss="toast"
+					aria-label="Close"></button>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="/js/category.js"></script>
+</div>
+</html>

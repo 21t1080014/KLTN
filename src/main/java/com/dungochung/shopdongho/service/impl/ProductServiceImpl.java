@@ -27,6 +27,8 @@ import com.dungochung.shopdongho.dto.PaginationDto;
 import com.dungochung.shopdongho.dto.ProductDto;
 import com.dungochung.shopdongho.dto.ResponseDataDto;
 import com.dungochung.shopdongho.entity.BrandEntity;
+import com.dungochung.shopdongho.entity.CategoryEntity;
+import com.dungochung.shopdongho.repository.CategoryRepository;
 import com.dungochung.shopdongho.entity.CaseMaterialEntity;
 import com.dungochung.shopdongho.entity.GlassMaterialEntity;
 import com.dungochung.shopdongho.entity.ProductEntity;
@@ -60,6 +62,8 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	private GlassMaterialReponsitory glassMaterialRepository;
 	@Autowired
+	private CategoryRepository categoryRepository;
+	@Autowired
 	private ProductImageRepository imageRepository;
 	@Autowired
 	private FileStorageService fileStorageService;
@@ -87,6 +91,8 @@ public class ProductServiceImpl implements ProductService {
 						}).collect(Collectors.toList())))
 				.collect(Collectors.toList());
 
+		applyCategories(productDtos, productPage.getContent());
+
 		Map<String, Object> response = new HashMap<>();
 		response.put("products", productDtos);
 		PaginationDto paginationInfo = new PaginationDto(page, productPage.getTotalPages(),
@@ -101,8 +107,8 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ResponseDataDto creatProduct(String sku, String name, BrandEntity brand, WatchTypeEntity type,
 			CaseMaterialEntity caseMaterial, StrapMaterialEntity strapMaterial, GlassMaterialEntity glassMaterial,
-			String origin, ProductCondition condition, String warrantyPeriod, BigDecimal price, Gender gender,
-			Segment segment, String description, List<MultipartFile> images) {
+			CategoryEntity category, String origin, ProductCondition condition, String warrantyPeriod,
+			BigDecimal price, Gender gender, Segment segment, String description, List<MultipartFile> images) {
 		if (brand == null || type == null || caseMaterial == null || strapMaterial == null || glassMaterial == null) {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "One or more category information is invalid.", null);
 		}
@@ -115,6 +121,7 @@ public class ProductServiceImpl implements ProductService {
 		product.setCaseMaterial(caseMaterial);
 		product.setStrapMaterial(strapMaterial);
 		product.setGlassMaterial(glassMaterial);
+		product.setCategory(category);
 		product.setOrigin(origin);
 		product.setCondition(condition);
 		product.setWarrantyPeriod(warrantyPeriod);
@@ -161,9 +168,9 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public ResponseDataDto updateProduct(String productId, String sku, String name, BrandEntity brand,
 			WatchTypeEntity type, CaseMaterialEntity caseMaterial, StrapMaterialEntity strapMaterial,
-			GlassMaterialEntity glassMaterial, String origin, ProductCondition condition, String warrantyPeriod,
-			BigDecimal price, Gender gender, Segment segment, String description, List<MultipartFile> images,
-			List<String> oldImageNames) {
+			GlassMaterialEntity glassMaterial, CategoryEntity category, String origin, ProductCondition condition,
+			String warrantyPeriod, BigDecimal price, Gender gender, Segment segment, String description,
+			List<MultipartFile> images, List<String> oldImageNames) {
 
 		ProductEntity existingProduct = productRepository.findById(productId).orElse(null);
 		if (existingProduct == null) {
@@ -178,6 +185,7 @@ public class ProductServiceImpl implements ProductService {
 		existingProduct.setCaseMaterial(caseMaterial);
 		existingProduct.setStrapMaterial(strapMaterial);
 		existingProduct.setGlassMaterial(glassMaterial);
+		existingProduct.setCategory(category);
 		existingProduct.setOrigin(origin);
 		existingProduct.setCondition(condition);
 		existingProduct.setWarrantyPeriod(warrantyPeriod);
@@ -246,6 +254,17 @@ public class ProductServiceImpl implements ProductService {
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Product deleted successfully", null);
 	}
 
+	// productDtos được map theo đúng thứ tự của products nên gán danh mục theo index
+	private void applyCategories(List<ProductDto> dtos, List<ProductEntity> products) {
+		for (int i = 0; i < dtos.size() && i < products.size(); i++) {
+			CategoryEntity c = products.get(i).getCategory();
+			if (c != null) {
+				dtos.get(i).setCategoryId(c.getCategoryId());
+				dtos.get(i).setCategoryName(c.getName());
+			}
+		}
+	}
+
 	private Double getMaxPrice() {
 		BigDecimal maxPrice = productRepository.findMaxPrice();
 		return maxPrice != null ? maxPrice.doubleValue() : 0.0;
@@ -292,6 +311,8 @@ public class ProductServiceImpl implements ProductService {
 						}).collect(Collectors.toList())))
 				.collect(Collectors.toList());
 
+		applyCategories(productDtos, productPage.getContent());
+
 		// Chuẩn bị response
 		Map<String, Object> response = new HashMap<>();
 		response.put("products", productDtos);
@@ -312,6 +333,12 @@ public class ProductServiceImpl implements ProductService {
 		response.put("caseMaterials", caseMaterialRepository.findAll());
 		response.put("strapMaterials", strapMaterialRepository.findAll());
 		response.put("glassMaterials", glassMaterialRepository.findAll());
+		response.put("categories", categoryRepository.findAll().stream().map(c -> {
+			Map<String, Object> m = new HashMap<>();
+			m.put("categoryId", c.getCategoryId());
+			m.put("name", (c.getParent() != null ? c.getParent().getName() + " > " : "") + c.getName());
+			return m;
+		}).collect(Collectors.toList()));
 
 		response.put("conditions",
 				Arrays.stream(ProductCondition.values()).map(Enum::name).collect(Collectors.toList()));
@@ -346,6 +373,10 @@ public class ProductServiceImpl implements ProductService {
 					return dto;
 				}).collect(Collectors.toList()) : null);
 
+		if (product.getCategory() != null) {
+			productDto.setCategoryId(product.getCategory().getCategoryId());
+			productDto.setCategoryName(product.getCategory().getName());
+		}
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Success", productDto);
 	}
 

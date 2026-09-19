@@ -97,6 +97,10 @@
                                      or currentPath.startsWith('/admin/categories')} ? 'show'">
 						<ul class="ml-4 space-y-1 mt-1">
 							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/categories}"
+									th:classappend="${currentPath=='/admin/categories'} ? 'bg-gold text-charcoal':'text-white/90'">
+									Danh mục sản phẩm </a></li>
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
 									th:href="@{/admin/brands}"
 									th:classappend="${currentPath=='/admin/brands'} ? 'bg-gold text-charcoal':'text-white/90'">
 									Thương hiệu </a></li>
