@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Đăng nhập Admin - TIKTAKUS</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+		rel="stylesheet" />
+	<link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-ivory">
+
+	<div class="min-h-screen flex items-center justify-center px-4">
+		<div class="border border-line bg-white p-8 w-full max-w-sm">
+			<h3 class="font-heading text-xl text-charcoal text-center mb-6">TIKTAKUS Admin</h3>
+
+			<!-- Hiển thị lỗi nếu có -->
+			<div th:if="${error}" class="bg-sale/10 border border-sale text-sale text-sm px-4 py-3 mb-4"
+				th:text="${error}"></div>
+
+			<form th:action="@{/admin/login}" method="post" class="space-y-4">
+				<div>
+					<label for="username" class="label-field">Tên đăng nhập</label>
+					<input type="text" id="username" name="username" class="input-field" placeholder="Nhập tên đăng nhập"
+						required autofocus>
+				</div>
+
+				<div>
+					<label for="password" class="label-field">Mật khẩu</label>
+					<input type="password" id="password" name="password" class="input-field"
+						placeholder="Nhập mật khẩu" required>
+				</div>
+
+				<button type="submit" class="btn-primary w-full">Đăng nhập</button>
+			</form>
+
+			<p class="text-center text-xs text-charcoal-muted mt-6">&copy; 2026 TIKTAKUS Admin</p>
+		</div>
+	</div>
+
+</body>
+</html>

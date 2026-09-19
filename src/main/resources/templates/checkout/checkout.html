@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/storefront :: head('Thanh toán')}"></head>
+<body
+	th:attr="data-logged-in=${currentUser != null}, data-user-id=${currentUser != null ? currentUser.userId : ''}">
+	<div th:replace="~{layout/storefront :: navbar}"></div>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+		<nav class="text-sm text-charcoal-muted mb-6">
+			<a href="/" class="hover:text-charcoal">Trang chủ</a> &gt; <a href="/cart" class="hover:text-charcoal">Giỏ
+				hàng</a> &gt; <span class="text-charcoal">Phương thức thanh toán</span>
+		</nav>
+
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+			<div class="lg:col-span-2">
+				<h5 class="text-sm tracking-wide2 uppercase text-charcoal mb-3">Phương thức vận chuyển</h5>
+				<div class="border border-line p-4 mb-6 flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<input type="radio" name="shipping" id="ship1" checked class="accent-charcoal w-4 h-4" />
+						<label for="ship1" class="text-sm text-charcoal-soft">Giao hàng tận nơi (đơn hàng nhỏ hơn
+							500.000 VND)</label>
+					</div>
+					<span class="text-sm text-charcoal">30,000₫</span>
+				</div>
+
+				<h5 class="text-sm tracking-wide2 uppercase text-charcoal mb-3">Phương thức thanh toán</h5>
+				<div class="border border-line p-4 mb-6 space-y-4">
+					<div>
+						<div class="flex items-center gap-2">
+							<input type="radio" name="payment" id="cod" checked class="accent-charcoal w-4 h-4" />
+							<label for="cod" class="text-sm font-medium text-charcoal">Thanh toán khi giao hàng
+								(COD)</label>
+						</div>
+						<div id="codDescription" class="text-xs text-charcoal-muted mt-2 pl-6">
+							- Khách hàng mua không cần đặt cọc.<br> - Tài khoản ngân hàng của shop là
+							1234512341 - Vietinbank
+						</div>
+					</div>
+					<div>
+						<div class="flex items-center gap-2">
+							<input type="radio" name="payment" id="bank" class="accent-charcoal w-4 h-4" />
+							<label for="bank" class="text-sm font-medium text-charcoal">Chuyển khoản qua ngân
+								hàng</label>
+						</div>
+						<div id="bankDescription" class="text-xs text-charcoal-muted mt-2 pl-6" style="display: none;">
+							Vui lòng chuyển khoản theo thông tin ngân hàng được cung cấp sau khi đặt hàng<br> -
+							Tài khoản ngân hàng của shop là 1234512341 - Vietinbank.
+						</div>
+					</div>
+				</div>
+
+				<a href="/cart" class="text-sm text-charcoal-muted hover:text-charcoal">← Giỏ hàng</a>
+			</div>
+
+			<div class="lg:col-span-1">
+				<h5 class="font-heading text-lg text-charcoal mb-4">Chi tiết đơn hàng</h5>
+				<div id="order-summary" class="mb-4">
+					<!-- Sản phẩm sẽ render từ JS -->
+				</div>
+				<div class="mb-6">
+					<label for="coupon" class="label-field">Mã giảm giá</label>
+					<div class="flex gap-2">
+						<input type="text" class="input-field" id="coupon" />
+						<button class="btn-secondary !px-4 !py-2 text-xs shrink-0">Sử dụng</button>
+					</div>
+				</div>
+				<ul class="divide-y divide-line text-sm mb-6">
+					<li class="flex justify-between py-2 text-charcoal-soft">Tạm tính <span id="subtotal">0₫</span>
+					</li>
+					<li class="flex justify-between py-2 text-charcoal-soft">Phí vận chuyển <span
+							id="shipping-fee">30,000₫</span></li>
+					<li class="flex justify-between py-2 font-medium text-charcoal">Tổng cộng <span
+							id="total-amount">0₫</span></li>
+				</ul>
+				<button id="place-order-btn" class="btn-primary w-full">Hoàn tất đơn hàng</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal Xác nhận -->
+	<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="confirmationModalLabel">Thông báo</h5>
+				</div>
+				<div class="modal-body" id="confirmationModalBody">
+					<!-- Nội dung sẽ được đổ vào JS -->
+				</div>
+				<div class="modal-footer">
+					<button type="button" id="confirmModalBtn" class="btn-primary" data-bs-dismiss="modal">OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div th:replace="~{layout/storefront :: footer}"></div>
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="module" src="/js/checkoutPage.js"></script>
+</body>
+</html>

@@ -23,4 +23,19 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Inte
 
 	List<OrderItemEntity> findByOrder(OrderEntity order);
 
+	/** Sản phẩm bán chạy trong kỳ: chỉ tính đơn đã giao/hoàn thành và đã thanh toán (khớp định nghĩa doanh thu). Trả [id, tên, sku, số lượng, doanh thu]. */
+	@Query("""
+			SELECT oi.product.productId, oi.product.name, oi.product.sku, SUM(oi.quantity), SUM(oi.quantity * oi.priceEach)
+			FROM OrderItemEntity oi
+			WHERE oi.order.createdAt >= :from AND oi.order.createdAt < :to
+			  AND oi.order.orderStatus IN (com.dungochung.shopdongho.enums.OrderStatus.delivered, com.dungochung.shopdongho.enums.OrderStatus.completed)
+			  AND oi.order.paymentStatus = com.dungochung.shopdongho.enums.PaymentStatus.paid
+			GROUP BY oi.product.productId, oi.product.name, oi.product.sku
+			ORDER BY SUM(oi.quantity) DESC, SUM(oi.quantity * oi.priceEach) DESC
+			""")
+	List<Object[]> topProducts(@Param("from") java.time.LocalDateTime from, @Param("to") java.time.LocalDateTime to,
+			org.springframework.data.domain.Pageable pageable);
+
+	boolean existsByProduct_ProductId(String productId);
+
 }

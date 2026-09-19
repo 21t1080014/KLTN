@@ -29,29 +29,29 @@ public class ViewCustomerController {
 		if (currentUser == null)
 			return "redirect:/auth";
 		model.addAttribute("userId", currentUser.getUserId());
-		return "profile";
+		return "account/profile";
 	}
 
 	@GetMapping("/search-shop")
 	public String searchPage(@RequestParam String keyword, Model model) {
 		model.addAttribute("keyword", keyword);
-		return "search-shop";
+		return "product/search-shop";
 	}
 
 	@GetMapping("/detail-shop/{productId}")
 	public String detailPage(@PathVariable String productId, Model model) {
 		model.addAttribute("productId", productId);
-		return "detail-shop";
+		return "product/detail-shop";
 	}
 
 	@GetMapping("/cart")
 	public String cartPage(Model model) {
-		return "cart";
+		return "cart/cart";
 	}
 
 	@GetMapping("/collections")
 	public String collectionPage(Model model) {
-		return "collections";
+		return "product/collections";
 	}
 
 	@GetMapping("/auth")
@@ -60,12 +60,12 @@ public class ViewCustomerController {
 		if (currentUser != null)
 			return "redirect:/";
 		model.addAttribute("user", new UserEntity());
-		return "auth";
+		return "account/auth";
 	}
 
 	@GetMapping("/")
 	public String showHome() {
-		return "index";
+		return "home/index";
 	}
 
 	/*
@@ -95,6 +95,6 @@ public class ViewCustomerController {
 		if (currentUser == null) {
 			return "redirect:/auth";
 		}
-		return "checkout"; // Tên file .html cho trang thanh toán
+		return "checkout/checkout";
 	}
 }

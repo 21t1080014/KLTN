@@ -20,11 +20,12 @@ public class DashboardController {
 	@GetMapping
 	public String showDashboard(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/dashboard";
+		return "admin/dashboard";
 	}
 	@GetMapping("/api")
 	@ResponseBody
-	public ResponseDataDto getDashboard() {
-		return dashboardService.getDashboardData();
+	public ResponseDataDto getDashboard(jakarta.servlet.http.HttpSession session) {
+		// role do RoleInterceptor đồng bộ từ DB ở mỗi request
+		return dashboardService.getDashboardData((String) session.getAttribute("roleName"));
 	}
 }

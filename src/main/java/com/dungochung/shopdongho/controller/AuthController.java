@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,6 +21,7 @@ import com.dungochung.shopdongho.entity.UserEntity;
 import com.dungochung.shopdongho.repository.UserRepository;
 import com.dungochung.shopdongho.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -32,15 +34,29 @@ public class AuthController {
 	private UserRepository userRepository;
 
 	@PostMapping("/login")
-	public String handleLogin(@RequestParam String usernameOrEmail, @RequestParam String password, HttpSession session,
-			RedirectAttributes redirectAttributes) {
-		ResponseDataDto response = userService.login(usernameOrEmail, password);
+	public String handleLogin(@RequestParam String usernameOrEmail, @RequestParam String password,
+			HttpServletRequest request, RedirectAttributes redirectAttributes) {
+		ResponseDataDto response = userService.loginCustomer(usernameOrEmail, password);
 		if (response.getResponseCode() == Constant.RESULT_CD_SUCCESS) {
-			session.setAttribute("currentUser", response.getData());
-			System.out.println("sesion:" + session.getAttribute("currentUser"));
+			// Đổi session id sau khi đăng nhập thành công để tránh session fixation
+			request.changeSessionId();
+			request.getSession().setAttribute("currentUser", response.getData());
 			return "redirect:/";
 		}
-		redirectAttributes.addFlashAttribute("message", response.getResponseMsg());
+		// Sai tài khoản/mật khẩu dùng thông báo chung để không lộ tài khoản nào tồn tại (khóa/chưa kích hoạt vẫn báo rõ)
+		Object detail = response.getData();
+		boolean badCredentials = Integer.valueOf(404).equals(detail) || Integer.valueOf(401).equals(detail);
+		redirectAttributes.addFlashAttribute("message",
+				badCredentials ? "Sai tên đăng nhập hoặc mật khẩu." : response.getResponseMsg());
+		return "redirect:/auth";
+	}
+
+	@GetMapping("/logout")
+	public String logout(HttpServletRequest request) {
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
 		return "redirect:/auth";
 	}
 

@@ -1,0 +1,252 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<h1 class="font-heading text-2xl text-charcoal mb-2">Quản lý Khách hàng</h1>
+	<p class="text-sm text-charcoal-muted mb-6">
+		Chi tiêu chỉ tính đơn đã giao/hoàn thành và đã thanh toán. Hạng: Silver (mặc định) → Gold → Diamond theo tổng chi tiêu.
+		Khóa tài khoản sẽ chặn đăng nhập và đặt hàng nhưng vẫn giữ nguyên lịch sử đơn.
+	</p>
+
+	<div id="alertBox" class="alert hidden" role="alert"></div>
+
+	<form id="filterForm" class="mb-4 flex flex-wrap items-center gap-3" onsubmit="fetchCustomers(0); return false;">
+		<input type="text" id="keyword" class="form-control w-64" placeholder="Tên, email, SĐT, tên đăng nhập...">
+		<select id="statusFilter" class="form-select w-auto" onchange="fetchCustomers(0)">
+			<option value="">Mọi trạng thái</option>
+			<option value="ACTIVE">Đang hoạt động</option>
+			<option value="LOCKED">Đã khóa</option>
+			<option value="PENDING">Chờ kích hoạt</option>
+		</select>
+		<select id="sortBy" class="form-select w-auto" onchange="fetchCustomers(0)">
+			<option value="newest">Mới đăng ký</option>
+			<option value="spent">Chi tiêu cao nhất</option>
+			<option value="orders">Nhiều đơn nhất</option>
+			<option value="recent">Mua gần đây</option>
+			<option value="name">Tên A-Z</option>
+		</select>
+		<button class="btn btn-outline-primary">Tìm</button>
+		<span class="text-sm text-charcoal-muted" id="totalCount"></span>
+	</form>
+
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>Khách hàng</th>
+				<th>Liên hệ</th>
+				<th>Trạng thái</th>
+				<th>Hạng</th>
+				<th>Số đơn</th>
+				<th>Chi tiêu</th>
+				<th>Đơn gần nhất</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody id="customerBody"></tbody>
+	</table>
+	<nav>
+		<ul class="pagination mt-4" id="pagination"></ul>
+	</nav>
+
+	<!-- Modal hồ sơ khách -->
+	<div class="modal fade" id="customerModal" tabindex="-1">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Hồ sơ khách hàng</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" id="cId" />
+					<div class="grid grid-cols-2 gap-2 text-sm mb-4">
+						<div><strong>Họ tên:</strong> <span id="cName"></span></div>
+						<div><strong>Tên đăng nhập:</strong> <span id="cUser"></span></div>
+						<div><strong>Email:</strong> <span id="cEmail"></span></div>
+						<div><strong>SĐT:</strong> <span id="cPhone"></span></div>
+						<div class="col-span-2"><strong>Địa chỉ:</strong> <span id="cAddress"></span></div>
+						<div><strong>Ngày đăng ký:</strong> <span id="cCreated"></span></div>
+						<div><strong>Trạng thái:</strong> <span id="cStatus"></span></div>
+						<div class="col-span-2" id="cLockRow"><strong>Lý do khóa:</strong> <span id="cLock"></span></div>
+					</div>
+
+					<h6 class="font-semibold mb-2">Thống kê mua hàng</h6>
+					<div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm mb-4" id="cStats"></div>
+
+					<div class="border border-line p-3 mb-4">
+						<div class="mb-2 text-sm font-semibold">Khóa / mở khóa tài khoản</div>
+						<textarea id="cReason" class="form-control mb-2" rows="2" maxlength="255"
+							placeholder="Lý do (bắt buộc khi khóa)"></textarea>
+						<div class="flex gap-2">
+							<button class="btn btn-sm btn-danger" id="lockBtn" onclick="setStatus('LOCKED')">Khóa tài khoản</button>
+							<button class="btn btn-sm btn-success" id="unlockBtn" onclick="setStatus('ACTIVE')">Mở khóa / Kích hoạt</button>
+						</div>
+					</div>
+
+					<div class="mb-4">
+						<label class="form-label font-semibold" for="cNote">Ghi chú nội bộ (khách không thấy)</label>
+						<textarea id="cNote" class="form-control mb-2" rows="2" maxlength="1000"></textarea>
+						<button class="btn btn-sm btn-primary" onclick="saveNote()">Lưu ghi chú</button>
+					</div>
+
+					<h6 class="font-semibold mb-2">Đơn hàng gần đây</h6>
+					<table class="table table-bordered mb-4">
+						<thead>
+							<tr><th>Mã</th><th>Ngày</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thanh toán</th></tr>
+						</thead>
+						<tbody id="cOrders"></tbody>
+					</table>
+
+					<h6 class="font-semibold mb-2">Lịch sử khóa / mở khóa</h6>
+					<table class="table table-bordered">
+						<thead>
+							<tr><th>Thời gian</th><th>Từ</th><th>Sang</th><th>Người thực hiện</th><th>Lý do</th></tr>
+						</thead>
+						<tbody id="cHistory"></tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+    let currentPage = 0;
+    const statusText = { ACTIVE: 'Đang hoạt động', LOCKED: 'Đã khóa', PENDING: 'Chờ kích hoạt' };
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const money = v => Number(v || 0).toLocaleString('vi-VN') + '₫';
+
+    function showAlert(message, type = 'success') {
+      const box = document.getElementById('alertBox');
+      box.className = `alert alert-${type}`;
+      box.textContent = message;
+      box.classList.remove('hidden');
+      setTimeout(() => box.classList.add('hidden'), 4000);
+    }
+
+    function fetchCustomers(page = 0) {
+      const q = new URLSearchParams({
+        page, size: 10,
+        sort: document.getElementById('sortBy').value,
+      });
+      const kw = document.getElementById('keyword').value.trim();
+      const st = document.getElementById('statusFilter').value;
+      if (kw) q.set('keyword', kw);
+      if (st) q.set('status', st);
+      fetch('/admin/customers/api?' + q)
+        .then(r => r.json())
+        .then(res => {
+          const body = document.getElementById('customerBody');
+          const pg = document.getElementById('pagination');
+          if (res.responseCode !== 1) { showAlert('Không tải được danh sách', 'danger'); return; }
+          const d = res.data;
+          document.getElementById('totalCount').textContent = d.totalCount + ' khách hàng';
+          if (!d.customers.length) {
+            body.innerHTML = '<tr><td colspan="8" class="text-center text-charcoal-muted">Không có khách hàng phù hợp.</td></tr>';
+            pg.innerHTML = '';
+            return;
+          }
+          body.innerHTML = d.customers.map(c => `
+            <tr>
+              <td>${esc(c.fullName || c.username)}<div class="text-xs text-charcoal-muted">@${esc(c.username)}</div></td>
+              <td>${esc(c.email)}<div class="text-xs text-charcoal-muted">${esc(c.phone)}</div></td>
+              <td>${esc(statusText[c.status] || c.status)}</td>
+              <td>${esc(c.tier)}</td>
+              <td>${c.orderCount}</td>
+              <td>${money(c.totalSpent)}</td>
+              <td>${esc(c.lastOrderAt || '—')}</td>
+              <td><button class="btn btn-sm btn-primary" onclick="openCustomer('${esc(c.userId)}')">Hồ sơ</button></td>
+            </tr>`).join('');
+          pg.innerHTML = '';
+          for (let i = d.pagination.startPage; i <= d.pagination.endPage; i++) {
+            pg.innerHTML += `<li class="page-item ${i === d.pagination.currentPage ? 'active' : ''}">
+              <a class="page-link" href="#" onclick="fetchCustomers(${i});return false;">${i + 1}</a></li>`;
+          }
+          currentPage = d.pagination.currentPage;
+        });
+    }
+
+    function openCustomer(id, keepOpen) {
+      fetch('/admin/customers/api/' + encodeURIComponent(id))
+        .then(r => r.json())
+        .then(res => {
+          if (res.responseCode !== 1) { showAlert(res.responseMsg, 'danger'); return; }
+          const c = res.data, s = c.stats;
+          document.getElementById('cId').value = c.userId;
+          document.getElementById('cName').textContent = c.fullName || '';
+          document.getElementById('cUser').textContent = c.username;
+          document.getElementById('cEmail').textContent = c.email;
+          document.getElementById('cPhone').textContent = c.phone || '';
+          document.getElementById('cAddress').textContent = c.address || '';
+          document.getElementById('cCreated').textContent = c.createdAt || '';
+          document.getElementById('cStatus').textContent = statusText[c.status] || c.status;
+          const lockRow = document.getElementById('cLockRow');
+          if (c.status === 'LOCKED') {
+            lockRow.classList.remove('hidden');
+            document.getElementById('cLock').textContent = (c.lockReason || '') + (c.lockedBy ? ` (bởi ${c.lockedBy}, ${c.lockedAt})` : '');
+          } else {
+            lockRow.classList.add('hidden');
+          }
+          document.getElementById('lockBtn').classList.toggle('hidden', c.status === 'LOCKED');
+          document.getElementById('unlockBtn').classList.toggle('hidden', c.status === 'ACTIVE');
+          document.getElementById('cReason').value = '';
+          document.getElementById('cNote').value = c.internalNote || '';
+
+          const next = s.nextTier ? `<div class="col-span-2 md:col-span-4 text-xs text-charcoal-muted">Còn ${money(s.toNextTier)} để lên hạng ${esc(s.nextTier)}</div>` : '';
+          document.getElementById('cStats').innerHTML = `
+            <div><strong>Hạng:</strong> ${esc(s.tier)}</div>
+            <div><strong>Tổng chi tiêu:</strong> ${money(s.totalSpent)}</div>
+            <div><strong>Giá trị TB/đơn:</strong> ${money(s.avgOrderValue)}</div>
+            <div><strong>Tổng số đơn:</strong> ${s.orderCount}</div>
+            <div><strong>Đã giao/hoàn thành:</strong> ${s.deliveredCount}</div>
+            <div><strong>Đã hủy:</strong> ${s.canceledCount}</div>
+            <div><strong>Hoàn/trả:</strong> ${s.refundedCount}</div>
+            <div><strong>Đơn gần nhất:</strong> ${esc(s.lastOrderAt || '—')}</div>` + next;
+
+          document.getElementById('cOrders').innerHTML = c.orders.map(o => `
+            <tr><td><a href="/admin/orders?open=${o.orderId}">#${o.orderId}</a></td><td>${esc(o.createdAt)}</td>
+            <td>${money(o.totalPrice)}</td><td>${esc(o.orderStatus)}</td><td>${esc(o.paymentStatus)}</td></tr>`).join('')
+            || '<tr><td colspan="5" class="text-center text-charcoal-muted">Chưa có đơn hàng.</td></tr>';
+          document.getElementById('cHistory').innerHTML = c.statusHistory.map(h => `
+            <tr><td>${esc(h.at)}</td><td>${esc(statusText[h.from] || h.from || '—')}</td><td>${esc(statusText[h.to] || h.to)}</td>
+            <td>${esc(h.by)}</td><td>${esc(h.reason)}</td></tr>`).join('')
+            || '<tr><td colspan="5" class="text-center text-charcoal-muted">Chưa có thay đổi.</td></tr>';
+
+          if (!keepOpen) {
+            new bootstrap.Modal(document.getElementById('customerModal')).show();
+          }
+        });
+    }
+
+    function setStatus(to) {
+      const id = document.getElementById('cId').value;
+      const reason = document.getElementById('cReason').value.trim();
+      if (to === 'LOCKED' && !reason) {
+        showAlert('Vui lòng nhập lý do khóa tài khoản', 'danger');
+        document.getElementById('cReason').focus();
+        return;
+      }
+      if (!confirm(to === 'LOCKED' ? 'Khóa tài khoản này?' : 'Mở khóa/kích hoạt tài khoản này?')) return;
+      fetch(`/admin/customers/api/${encodeURIComponent(id)}/status?to=${to}&reason=${encodeURIComponent(reason)}`, { method: 'PUT' })
+        .then(r => r.json())
+        .then(res => {
+          showAlert(res.responseMsg, res.responseCode === 1 ? 'success' : 'danger');
+          if (res.responseCode === 1) { openCustomer(id, true); fetchCustomers(currentPage); }
+        });
+    }
+
+    function saveNote() {
+      const id = document.getElementById('cId').value;
+      const note = document.getElementById('cNote').value;
+      fetch(`/admin/customers/api/${encodeURIComponent(id)}/note`, { method: 'PUT', body: new URLSearchParams({ note }) })
+        .then(r => r.json())
+        .then(res => showAlert(res.responseMsg, res.responseCode === 1 ? 'success' : 'danger'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchCustomers(0);
+      const open = new URLSearchParams(location.search).get('open');
+      if (open) openCustomer(open);
+    });
+  </script>
+</div>
+</html>

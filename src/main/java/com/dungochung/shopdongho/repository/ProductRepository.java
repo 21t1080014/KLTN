@@ -15,10 +15,13 @@ import org.springframework.stereotype.Repository;
 
 import com.dungochung.shopdongho.entity.BrandEntity;
 import com.dungochung.shopdongho.entity.ProductEntity;
+import com.dungochung.shopdongho.enums.ProductStatus;
 import com.dungochung.shopdongho.enums.Segment;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, String> {
+	long countByStatus(com.dungochung.shopdongho.enums.ProductStatus status);
+
 	boolean existsByName(String name);
 
 	boolean existsByNameAndProductIdNot(String name, String productId);
@@ -28,7 +31,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 			  FROM ProductEntity p
 			    LEFT JOIN FETCH p.promotionProducts pp
 			    LEFT JOIN FETCH pp.promotion promo
-			  WHERE (:genders   IS NULL OR p.gender   IN :genders)
+			  WHERE p.status = com.dungochung.shopdongho.enums.ProductStatus.ACTIVE
+				    AND (:genders   IS NULL OR p.gender   IN :genders)
 			    AND (:segments  IS NULL OR p.segment  IN :segments)
 			    AND (:brandNames IS NULL OR p.brand.name IN :brandNames)
 			    AND (:priceMin  IS NULL OR p.price >= :priceMin)
@@ -38,14 +42,12 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 			@Param("brandNames") Object brandNames, @Param("priceMin") Double priceMin,
 			@Param("priceMax") Double priceMax, Pageable pageable);
 
-	@EntityGraph(attributePaths = { "promotionProducts", "promotionProducts.promotion", "images", "inventory", "brand",
-			"type", "caseMaterial", "strapMaterial", "glassMaterial" })
-	List<ProductEntity> findTop10ByOrderByCreatedAtDesc();
+	@EntityGraph(attributePaths = { "promotionProducts", "promotionProducts.promotion", "images", "brand", "type", "caseMaterial", "strapMaterial", "glassMaterial" })
+	List<ProductEntity> findTop10ByStatusOrderByCreatedAtDesc(ProductStatus status);
 
-	@EntityGraph(attributePaths = { "promotionProducts", "promotionProducts.promotion", "brand", "type", "inventory",
-			"images", "caseMaterial", "strapMaterial", "glassMaterial" })
+	@EntityGraph(attributePaths = { "promotionProducts", "promotionProducts.promotion", "brand", "type", "images", "caseMaterial", "strapMaterial", "glassMaterial" })
 	@Query("SELECT DISTINCT p FROM ProductEntity p " + "JOIN p.promotionProducts pp "
-			+ "WHERE pp.promotion.isActive = true " + "AND pp.promotion.startAt <= :now "
+			+ "WHERE p.status = com.dungochung.shopdongho.enums.ProductStatus.ACTIVE AND pp.promotion.isActive = true " + "AND pp.promotion.startAt <= :now "
 			+ "AND pp.promotion.endAt >= :now")
 	List<ProductEntity> findPromotionalProducts(@Param("now") LocalDateTime now);
 
@@ -100,8 +102,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 	// Truy vấn chỉ lấy ID sản phẩm theo keyword, có phân trang
 	@Query("""
 			    SELECT p.id FROM ProductEntity p
-			    WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
-			       OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :sku, '%'))
+			    WHERE p.status = com.dungochung.shopdongho.enums.ProductStatus.ACTIVE
+				      AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+				       OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :sku, '%')))
 			""")
 	Page<Long> findIdsByNameOrSku(@Param("name") String name, @Param("sku") String sku, Pageable pageable);
 
@@ -111,14 +114,19 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 			"strapMaterial", "glassMaterial", "caseMaterial" })
 	List<ProductEntity> findByProductIdIn(List<Long> ids);
 
-	@Query("SELECT COUNT(p) FROM ProductEntity p " + "WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
-			+ "   OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+	@Query("SELECT COUNT(p) FROM ProductEntity p WHERE p.status = com.dungochung.shopdongho.enums.ProductStatus.ACTIVE "
+			+ "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) "
+			+ "   OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%')))")
 	long countByNameOrSku(@Param("keyword") String keyword);
 
 	@EntityGraph(attributePaths = { "promotionProducts", "promotionProducts.promotion", "images", "brand", "type",
 			"strapMaterial", "glassMaterial", "caseMaterial" })
-	Page<ProductEntity> findByNameContainingIgnoreCaseOrSkuContainingIgnoreCase(String name, String sku,
-			Pageable pageable);
+	@Query("SELECT p FROM ProductEntity p WHERE p.status = com.dungochung.shopdongho.enums.ProductStatus.ACTIVE "
+			+ "AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')) OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :sku, '%')))")
+	Page<ProductEntity> findByNameContainingIgnoreCaseOrSkuContainingIgnoreCase(@Param("name") String name,
+			@Param("sku") String sku, Pageable pageable);
+
+	Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
 
 	/** Tải luôn theo brandId + segment */
 	@Query("""
@@ -128,8 +136,11 @@ public interface ProductRepository extends JpaRepository<ProductEntity, String> 
 			LEFT JOIN FETCH pp.promotion promo
 			LEFT JOIN FETCH p.images img
 			WHERE p.brand.brandId = :brandId AND p.segment = :segment
-			ORDER BY p.createdAt DESC
-			""")
+				  AND p.status = com.dungochung.shopdongho.enums.ProductStatus.ACTIVE
+				ORDER BY p.createdAt DESC
+				""")
 	List<ProductEntity> findWithPromotionsAndImagesByBrandAndSegment(@Param("brandId") int brandId,
 			@Param("segment") Segment segment);
+
+	long countByCategory_CategoryId(Integer categoryId);
 }

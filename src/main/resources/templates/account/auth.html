@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/storefront :: head('Đăng nhập / Đăng ký')}"></head>
+<body>
+
+	<!-- Navbar -->
+	<div th:replace="~{layout/storefront :: navbar}"></div>
+	<div class="max-w-md mx-auto px-4 py-16">
+		<div class="border border-line p-8">
+			<!-- Nút chuyển đổi -->
+			<div class="toggle-container flex border border-line overflow-hidden mb-8">
+				<button id="btnLogin" class="toggle-btn active" onclick="showLogin()">Đăng nhập</button>
+				<button id="btnRegister" class="toggle-btn" onclick="showRegister()">Đăng ký</button>
+			</div>
+
+			<!-- Form Đăng nhập -->
+			<div id="loginForm">
+				<h3 class="font-heading text-xl text-charcoal text-center mb-6">Đăng nhập</h3>
+				<form th:action="@{/login}" method="post" class="space-y-4">
+					<div>
+						<label for="usernameOrEmail" class="label-field">Tên đăng nhập hoặc Email</label>
+						<input type="text" name="usernameOrEmail" id="usernameOrEmail" class="input-field"
+							required />
+					</div>
+					<div>
+						<label for="loginPassword" class="label-field">Mật khẩu</label>
+						<input type="password" name="password" id="loginPassword" class="input-field" required />
+					</div>
+					<button type="submit" class="btn-primary w-full">Đăng nhập</button>
+				</form>
+			</div>
+
+			<!-- Form Đăng ký -->
+			<div id="registerForm" style="display: none;">
+				<h3 class="font-heading text-xl text-charcoal text-center mb-6">Đăng ký</h3>
+				<form th:action="@{/register}" method="post" enctype="multipart/form-data" th:object="${user}"
+					class="space-y-4">
+					<div>
+						<label class="label-field" for="username">Tên đăng nhập</label>
+						<input type="text" th:field="*{username}" class="input-field" required />
+					</div>
+					<div>
+						<label class="label-field" for="email">Email</label>
+						<input type="email" th:field="*{email}" class="input-field" required />
+					</div>
+					<div>
+						<label class="label-field" for="fullName">Họ và tên</label>
+						<input type="text" th:field="*{fullName}" class="input-field" />
+					</div>
+					<div>
+						<label class="label-field" for="phone">Số điện thoại</label>
+						<input type="text" th:field="*{phone}" class="input-field" />
+					</div>
+					<div>
+						<label class="label-field" for="address">Địa chỉ</label>
+						<input type="text" th:field="*{address}" class="input-field" />
+					</div>
+					<div>
+						<label class="label-field" for="rawPassword">Mật khẩu</label>
+						<input type="password" id="rawPassword" name="rawPassword" class="input-field" required />
+					</div>
+					<div>
+						<label class="label-field" for="profileImage">Ảnh đại diện</label>
+						<input type="file" id="profileImage" name="profileImage" class="input-field" />
+					</div>
+					<button type="button" id="btnSubmitRegister" class="btn-primary w-full">Đăng ký</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Modal xác nhận mã (Email Verification) -->
+	<div class="modal fade" id="verifyModal" tabindex="-1" aria-labelledby="verifyModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="verifyModalLabel">Xác nhận mã từ Email</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+				</div>
+				<div class="modal-body">
+					<p class="text-sm text-charcoal-soft mb-4">Chúng tôi đã gửi một mã 6 chữ số tới email của bạn.
+						Vui lòng kiểm tra hộp thư và nhập mã bên dưới:</p>
+
+					<div>
+						<input type="text" id="verifyCodeInput" class="input-field" placeholder="Nhập mã xác minh"
+							maxlength="6" />
+						<div id="verifyFeedback" class="text-sale text-sm mt-2" style="display: none;"></div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn-primary" onclick="submitVerifyCode()">Xác nhận</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div th:replace="~{layout/cart-drawer :: cartDrawer}"></div>
+	<div th:replace="~{layout/storefront :: footer}"></div>
+
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="module" src="/js/auth.js"></script>
+</body>
+</html>

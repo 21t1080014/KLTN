@@ -34,7 +34,7 @@ public class PromotionController {
 	@GetMapping
 	public String showPromotion(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/Promotion";
+		return "admin/promotions";
 	}
 
 	// Get all promotions with pagination

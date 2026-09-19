@@ -56,6 +56,10 @@ public class BrandServiceImpl implements BrandService {
 			if (brandReponsitory.existsByName(name)) {
 				return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Brand name already exists");
 			}
+			// Cột brands.logo_image là NOT NULL: báo lỗi rõ ràng thay vì để DB từ chối (trước đây trả 500 UnexpectedRollback)
+			if (logoImage == null || logoImage.isEmpty()) {
+				return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Vui lòng chọn ảnh logo cho thương hiệu");
+			}
 			String logoUrl = null;
 			if (logoImage != null && !logoImage.isEmpty()) {
 				logoUrl = fileStorageService.saveFile(logoImage, "brands");
@@ -67,7 +71,8 @@ public class BrandServiceImpl implements BrandService {
 			BrandEntity saved = brandReponsitory.save(brandEntity);
 			return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Created successfully", saved);
 		} catch (Exception e) {
-			e.getStackTrace();
+			// Đã nuốt exception nên phải đánh dấu rollback thủ công, nếu không commit sẽ nổ UnexpectedRollbackException (500)
+			org.springframework.transaction.interceptor.TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Error creating brand: " + e.getMessage());
 		}
 	}

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="adminLayout">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>TIKTAKUS Admin</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap"
+		rel="stylesheet" />
+	<link rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+	<link href="/css/output.css" rel="stylesheet">
+	<!-- Custom CSS -->
+	<link href="/css/common.css" rel="stylesheet">
+	<link href="/css/item.css" rel="stylesheet">
+	<link th:if="${currentPath == '/admin/users'}" href="/css/user.css" rel="stylesheet">
+	<link th:if="${currentPath == '/admin/promotions'}" href="/css/promotion.css" rel="stylesheet">
+</head>
+<body class="bg-ivory text-charcoal-soft font-body" th:attr="data-role=${session.roleName}">
+
+	<!-- Redirect về login nếu role không hợp lệ -->
+	<th:block
+		th:if="${session.roleName != 'admin'
+               and session.roleName != 'product_staff'
+               and session.roleName != 'support_staff'
+               and session.roleName != 'warehouse_staff'}">
+		<script th:inline="javascript">
+			/*<![CDATA[*/
+			window.location.href = /*[[@{/admin/login}]]*/'/admin/login';
+			/*]]>*/
+		</script>
+	</th:block>
+
+	<!-- Top Navbar -->
+	<nav class="bg-charcoal text-white">
+		<div class="flex items-center justify-between px-4 h-16">
+			<div class="flex items-center gap-3">
+				<button class="lg:hidden btn-icon !border-white/30 !text-white" type="button"
+					data-bs-toggle="offcanvas" data-bs-target="#sidebar-offcanvas">
+					<i class="bi bi-list"></i>
+				</button>
+				<a class="font-heading text-lg tracking-wide2 text-white" th:href="@{/admin/dashboard}"><i
+						class="bi bi-clock me-2"></i>TIKTAKUS Admin</a>
+			</div>
+
+			<div class="relative">
+				<button class="flex items-center gap-2 text-sm text-white/90 hover:text-white" id="userMenu"
+					type="button" data-bs-toggle="dropdown">
+					<i class="bi bi-person-circle"></i> <span th:text="${session.username}">Admin</span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+					<li><a class="dropdown-item" th:href="@{/admin/login/logout}"><i
+								class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+
+	<div class="flex">
+		<!-- Sidebar (desktop) -->
+		<nav id="sidebar-static" class="hidden lg:block bg-charcoal text-white/90 p-4 min-h-[calc(100vh-4rem)] shrink-0"
+			style="width: 250px;">
+			<ul class="space-y-1 text-sm">
+				<li><a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors"
+						th:href="@{/admin/dashboard}"
+						th:classappend="${currentPath=='/admin/dashboard'}?'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-speedometer2 me-2"></i>Dashboard
+				</a></li>
+
+				<!-- Sản phẩm: admin + product_staff -->
+				<li th:if="${session.roleName=='admin' or session.roleName=='product_staff'}">
+					<a class="flex items-center justify-between px-3 py-2 text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
+						data-bs-toggle="collapse" href="#productMenu"> <span><i
+								class="bi bi-box-seam me-2"></i>Sản phẩm</span> <i class="bi bi-chevron-down"></i>
+					</a>
+					<div class="collapse" id="productMenu"
+						th:classappend="${currentPath.startsWith('/admin/products')} ? 'show'">
+						<ul class="ml-4 space-y-1 mt-1">
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/products}"
+									th:classappend="${currentPath=='/admin/products'} ? 'bg-gold text-charcoal':'text-white/90'">
+									Danh sách </a></li>
+						</ul>
+					</div>
+				</li>
+
+				<!-- Thuộc tính: admin only -->
+				<li th:if="${session.roleName=='admin'}">
+					<a class="flex items-center justify-between px-3 py-2 text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
+						data-bs-toggle="collapse" href="#categoryMenu"> <span><i
+								class="bi bi-tags me-2"></i>Thuộc tính</span> <i class="bi bi-chevron-down"></i>
+					</a>
+					<div class="collapse" id="categoryMenu"
+						th:classappend="${currentPath.startsWith('/admin/brands')
+                                     or currentPath.startsWith('/admin/categories')} ? 'show'">
+						<ul class="ml-4 space-y-1 mt-1">
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/categories}"
+									th:classappend="${currentPath=='/admin/categories'} ? 'bg-gold text-charcoal':'text-white/90'">
+									Danh mục sản phẩm </a></li>
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/brands}"
+									th:classappend="${currentPath=='/admin/brands'} ? 'bg-gold text-charcoal':'text-white/90'">
+									Thương hiệu </a></li>
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/categories/case-materials}"
+									th:classappend="${currentPath.startsWith('/admin/categories/case-materials')} ? 'bg-gold text-charcoal':'text-white/90'">
+									Chất liệu vỏ </a></li>
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/categories/glass-materials}"
+									th:classappend="${currentPath.startsWith('/admin/categories/glass-materials')} ? 'bg-gold text-charcoal':'text-white/90'">
+									Mặt kính </a></li>
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/categories/strap-materials}"
+									th:classappend="${currentPath.startsWith('/admin/categories/strap-materials')} ? 'bg-gold text-charcoal':'text-white/90'">
+									Chất liệu dây đeo </a></li>
+							<li><a class="block px-3 py-1.5 hover:bg-white/10 transition-colors"
+									th:href="@{/admin/categories/watch-types}"
+									th:classappend="${currentPath.startsWith('/admin/categories/watch-types')} ? 'bg-gold text-charcoal':'text-white/90'">
+									Phân loại đồng hồ </a></li>
+						</ul>
+					</div>
+				</li>
+
+				<!-- Đơn hàng: admin + support_staff + warehouse_staff (mỗi bước có quyền riêng) -->
+				<li th:if="${session.roleName=='admin' or session.roleName=='support_staff' or session.roleName=='warehouse_staff'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/orders}"
+						th:classappend="${currentPath=='/admin/orders'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-receipt me-2"></i>Đơn hàng
+				</a>
+				</li>
+
+				<!-- Khách hàng: admin + support_staff -->
+				<li th:if="${session.roleName=='admin' or session.roleName=='support_staff'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/customers}"
+						th:classappend="${currentPath=='/admin/customers'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-people me-2"></i>Khách hàng
+				</a>
+				</li>
+
+				<!-- Tồn kho: admin + warehouse_staff -->
+				<li th:if="${session.roleName=='admin' or session.roleName=='warehouse_staff' or session.roleName=='product_staff'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/inventory}"
+						th:classappend="${currentPath=='/admin/inventory'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-box2 me-2"></i>Tồn kho
+				</a>
+				</li>
+
+				<!-- Khuyến mãi: admin only -->
+				<li th:if="${session.roleName=='admin'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/promotions}"
+						th:classappend="${currentPath=='/admin/promotions'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-megaphone me-2"></i>Khuyến mãi
+				</a>
+				</li>
+
+				<!-- Người dùng: admin only -->
+				<li th:if="${session.roleName=='admin'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/users}"
+						th:classappend="${currentPath=='/admin/users'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-people me-2"></i>Người dùng
+				</a>
+				</li>
+				<li th:if="${session.roleName=='admin'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/reports}"
+						th:classappend="${currentPath=='/admin/reports'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-graph-up me-2"></i>Báo cáo
+				</a>
+				</li>
+				<li th:if="${session.roleName=='admin'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/audit}"
+						th:classappend="${currentPath=='/admin/audit'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-journal-text me-2"></i>Nhật ký thao tác
+				</a>
+				</li>
+
+				<!-- Voucher: admin only -->
+				<li th:if="${session.roleName=='admin'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/voucher}"
+						th:classappend="${currentPath=='/admin/voucher'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-gem me-2"></i>Voucher
+				</a>
+				</li>
+
+				<!-- Nhập hàng: admin + warehouse_staff -->
+				<li th:if="${session.roleName=='admin' or session.roleName=='warehouse_staff'}">
+					<a class="flex items-center px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/purchases}"
+						th:classappend="${currentPath=='/admin/purchases'} ? 'bg-gold text-charcoal':'text-white/90'">
+						<i class="bi bi-cart-check me-2"></i>Nhập hàng
+				</a>
+				</li>
+
+			</ul>
+		</nav>
+		<!-- Offcanvas Sidebar (Mobile) — dùng lại menu giống desktop -->
+		<div class="offcanvas offcanvas-start lg:hidden bg-charcoal text-white" tabindex="-1" id="sidebar-offcanvas">
+			<div class="offcanvas-header !border-white/10">
+				<h5 class="offcanvas-title !text-white">Menu</h5>
+				<button type="button" class="btn-close !text-white" data-bs-dismiss="offcanvas"></button>
+			</div>
+			<div class="offcanvas-body p-0">
+				<ul class="space-y-1 text-sm p-2">
+					<li><a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/dashboard}"
+							th:classappend="${currentPath=='/admin/dashboard'}?'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-speedometer2 me-2"></i>Dashboard
+					</a></li>
+					<li th:if="${session.roleName=='admin' or session.roleName=='product_staff'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/products}"
+							th:classappend="${currentPath=='/admin/products'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-box-seam me-2"></i>Sản phẩm </a></li>
+					<li th:if="${session.roleName=='admin'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/brands}"
+							th:classappend="${currentPath=='/admin/brands'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-tags me-2"></i>Thương hiệu </a></li>
+					<li th:if="${session.roleName=='admin' or session.roleName=='support_staff' or session.roleName=='warehouse_staff'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/orders}"
+							th:classappend="${currentPath=='/admin/orders'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-receipt me-2"></i>Đơn hàng </a></li>
+					<li th:if="${session.roleName=='admin' or session.roleName=='support_staff'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/customers}"
+							th:classappend="${currentPath=='/admin/customers'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-people me-2"></i>Khách hàng </a></li>
+					<li th:if="${session.roleName=='admin' or session.roleName=='warehouse_staff' or session.roleName=='product_staff'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/inventory}"
+							th:classappend="${currentPath=='/admin/inventory'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-box2 me-2"></i>Tồn kho </a></li>
+					<li th:if="${session.roleName=='admin'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/promotions}"
+							th:classappend="${currentPath=='/admin/promotions'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-megaphone me-2"></i>Khuyến mãi </a></li>
+					<li th:if="${session.roleName=='admin'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/users}"
+							th:classappend="${currentPath=='/admin/users'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-people me-2"></i>Người dùng </a></li>
+					<li th:if="${session.roleName=='admin'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/reports}"
+							th:classappend="${currentPath=='/admin/reports'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-graph-up me-2"></i>Báo cáo </a></li>
+					<li th:if="${session.roleName=='admin'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/audit}"
+							th:classappend="${currentPath=='/admin/audit'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-journal-text me-2"></i>Nhật ký thao tác </a></li>
+					<li th:if="${session.roleName=='admin'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/voucher}"
+							th:classappend="${currentPath=='/admin/voucher'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-gem me-2"></i>Voucher </a></li>
+					<li th:if="${session.roleName=='admin' or session.roleName=='warehouse_staff'}">
+						<a class="block px-3 py-2 hover:bg-white/10 transition-colors" th:href="@{/admin/purchases}"
+							th:classappend="${currentPath=='/admin/purchases'} ? 'bg-gold text-charcoal':'text-white/90'">
+							<i class="bi bi-cart-check me-2"></i>Nhập hàng </a></li>
+				</ul>
+			</div>
+		</div>
+		<!-- Main Content -->
+		<div class="flex-1 p-6 md:p-8">
+			<div th:insert="~{::content}"></div>
+		</div>
+	</div>
+
+	<!-- Bootstrap JS (chỉ dùng cho hành vi modal/offcanvas/dropdown/collapse).
+	     jQuery KHÔNG load ở đây - từng trang admin tự load jQuery riêng bên trong fragment "content"
+	     (giữ đúng kiến trúc gốc, tránh load jQuery 2 lần). -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -14,7 +14,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UuidGenerator;
+
+import com.dungochung.shopdongho.enums.ProductStatus;
 
 @Entity
 @Table(name = "products")
@@ -52,6 +56,11 @@ public class ProductEntity {
 	@JoinColumn(name = "glass_material_id", foreignKey = @ForeignKey(name = "fk_products_glass_material"))
 	private GlassMaterialEntity glassMaterial;
 
+	// Danh mục đa cấp (nullable - sản phẩm cũ chưa gán danh mục vẫn hợp lệ)
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_products_category"))
+	private CategoryEntity category;
+
 	@Column(name = "origin", length = 100)
 	private String origin;
 
@@ -77,8 +86,16 @@ public class ProductEntity {
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private Set<PromotionProductEntity> promotionProducts;
-	@OneToOne(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private InventoryEntity inventory;
+
+	/** Trạng thái vòng đời: chỉ ACTIVE mới hiển thị/bán ở storefront. */
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 20)
+	@ColumnDefault("'ACTIVE'")
+	private ProductStatus status = ProductStatus.ACTIVE;
+
+	/** Tổng hàng có thể bán của mọi biến thể (quantity - reserved). Tính bằng subquery, không cần join. */
+	@Formula("(select coalesce(sum(i.quantity - i.reserved_quantity), 0) from inventories i where i.product_id = product_id)")
+	private Integer availableQuantity;
 
 	public String getDescription() {
 		return description;
@@ -147,12 +164,16 @@ public class ProductEntity {
 		return promotionProducts;
 	}
 
-	public InventoryEntity getInventory() {
-		return inventory;
+	public ProductStatus getStatus() {
+		return status;
 	}
 
-	public void setInventory(InventoryEntity inventory) {
-		this.inventory = inventory;
+	public void setStatus(ProductStatus status) {
+		this.status = status;
+	}
+
+	public int getAvailableQuantity() {
+		return availableQuantity == null ? 0 : Math.max(availableQuantity, 0);
 	}
 
 	public void setPromotionProducts(Set<PromotionProductEntity> promotionProducts) {
@@ -217,6 +238,14 @@ public class ProductEntity {
 
 	public void setGlassMaterial(GlassMaterialEntity glassMaterial) {
 		this.glassMaterial = glassMaterial;
+	}
+
+	public CategoryEntity getCategory() {
+		return category;
+	}
+
+	public void setCategory(CategoryEntity category) {
+		this.category = category;
 	}
 
 	public String getOrigin() {

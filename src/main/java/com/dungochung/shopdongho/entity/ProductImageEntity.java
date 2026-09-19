@@ -14,6 +14,11 @@ public class ProductImageEntity {
 	@JoinColumn(name = "product_id", nullable = false)
 	private ProductEntity product;
 
+	// Ảnh riêng theo biến thể (null = ảnh chung của sản phẩm)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "variant_id", foreignKey = @ForeignKey(name = "fk_image_variant"))
+	private ProductVariantEntity variant;
+
 	@Column(name = "url", nullable = false, length = 255)
 	private String url;
 
@@ -51,6 +56,14 @@ public class ProductImageEntity {
 
 	public void setProduct(ProductEntity product) {
 		this.product = product;
+	}
+
+	public ProductVariantEntity getVariant() {
+		return variant;
+	}
+
+	public void setVariant(ProductVariantEntity variant) {
+		this.variant = variant;
 	}
 
 	public String getUrl() {

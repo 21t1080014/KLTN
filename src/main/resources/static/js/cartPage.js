@@ -14,7 +14,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
 	function renderCart() {
 		if (cart.length === 0) {
-			cartItemsContainer.innerHTML += "<p>Giỏ hàng trống.</p>";
+			cartItemsContainer.innerHTML = `
+				<h4 class="font-heading text-xl text-charcoal mb-6">Giỏ hàng</h4>
+				<div class="text-center text-charcoal-muted py-16">
+					<i class="bi bi-bag fs-1"></i>
+					<p class="mt-3 text-sm">Giỏ hàng trống.</p>
+				</div>
+			`;
 			cartTotalContainer.innerText = "0 ₫";
 			return;
 		}
@@ -29,17 +35,17 @@ document.addEventListener("DOMContentLoaded", function() {
 			total += itemTotal;
 
 			html += `
-				<div class="d-flex border-bottom py-3 align-items-center" data-index="${i}">
-					<img src="${item.img}" alt="${item.name}" width="100" class="me-3 rounded" />
-					<div class="flex-grow-1">
-						<h6 class="mb-1">${item.name}</h6>
-						<div class="text-muted small">SKU: ${item.sku}</div>
-						<div class="text-danger fw-bold mt-1">${price.toLocaleString("vi-VN")}₫</div>
-						<div class="d-flex align-items-center mt-2">
-							<button class="btn btn-outline-secondary btn-sm btn-minus">−</button>
-							<span class="mx-2">${item.quantity}</span>
-							<button class="btn btn-outline-secondary btn-sm btn-plus">+</button>
-							<a href="#" class="ms-3 text-danger btn-delete">Xóa</a>
+				<div class="flex border-b border-line py-5 items-center gap-4" data-index="${i}">
+					<img src="${item.img}" alt="${item.name}" width="100" class="border border-line object-cover" />
+					<div class="flex-1">
+						<h6 class="text-charcoal mb-1">${item.name}</h6>
+						<div class="text-charcoal-muted text-xs">SKU: ${item.sku}</div>
+						<div class="price-current mt-1">${price.toLocaleString("vi-VN")}₫</div>
+						<div class="flex items-center gap-3 mt-3">
+							<button class="btn-icon !w-8 !h-8 btn-minus">−</button>
+							<span class="text-sm">${item.quantity}</span>
+							<button class="btn-icon !w-8 !h-8 btn-plus">+</button>
+							<a href="#" class="ml-3 text-xs text-sale hover:underline btn-delete">Xóa</a>
 						</div>
 					</div>
 				</div>
@@ -55,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 
 	function updateView() {
-		cartItemsContainer.innerHTML = "<h4>Giỏ hàng:</h4>";
+		cartItemsContainer.innerHTML = "<h4 class=\"font-heading text-xl text-charcoal mb-6\">Giỏ hàng</h4>";
 		renderCart();
 	}
 

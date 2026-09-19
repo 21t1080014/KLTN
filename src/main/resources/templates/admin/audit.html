@@ -1,0 +1,65 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<h1 class="font-heading text-2xl text-charcoal mb-2">Nhật ký thao tác</h1>
+	<p class="text-sm text-charcoal-muted mb-6">
+		Ghi lại đăng nhập quản trị, tạo/sửa/xóa người dùng (kể cả đổi vai trò/trạng thái) và các thao tác xóa dữ liệu quan trọng.
+		Chỉ quản trị viên xem được; nhật ký chỉ ghi thêm, không sửa/xóa.
+	</p>
+
+	<form class="mb-4 flex flex-wrap items-center gap-3" onsubmit="loadLogs(0); return false;">
+		<select id="actionFilter" class="form-select w-auto">
+			<option value="">Mọi hành động</option>
+			<option>LOGIN_SUCCESS</option>
+			<option>LOGIN_FAILED</option>
+			<option>LOGIN_BLOCKED</option>
+			<option>USER_CREATE</option>
+			<option>USER_UPDATE</option>
+			<option>USER_DELETE</option>
+			<option>PRODUCT_DELETE</option>
+			<option>PURCHASE_DELETE</option>
+			<option>INVENTORY_DELETE</option>
+			<option>ORDER_DELETE</option>
+		</select>
+		<input type="text" id="actorFilter" class="form-control w-56" placeholder="Người thực hiện...">
+		<button class="btn btn-outline-primary">Lọc</button>
+		<span class="text-sm text-charcoal-muted" id="totalCount"></span>
+	</form>
+
+	<table class="table table-bordered">
+		<thead>
+			<tr><th>Thời gian</th><th>Người thực hiện</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th><th>IP</th></tr>
+		</thead>
+		<tbody id="logBody"></tbody>
+	</table>
+	<nav>
+		<ul class="pagination mt-4" id="pagination"></ul>
+	</nav>
+
+	<script>
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function loadLogs(page = 0) {
+      const q = new URLSearchParams({ page, size: 20 });
+      const a = document.getElementById('actionFilter').value;
+      const w = document.getElementById('actorFilter').value.trim();
+      if (a) q.set('action', a);
+      if (w) q.set('actor', w);
+      fetch('/admin/audit/api?' + q).then(r => r.json()).then(res => {
+        if (res.responseCode !== 1) return;
+        const d = res.data;
+        document.getElementById('totalCount').textContent = d.totalCount + ' bản ghi';
+        document.getElementById('logBody').innerHTML = d.logs.map(l => `
+          <tr><td>${esc(l.at)}</td><td>${esc(l.actor)}<div class="text-xs text-charcoal-muted">${esc(l.role)}</div></td>
+          <td>${esc(l.action)}</td><td>${esc(l.targetType)} ${esc(l.targetId)}</td><td>${esc(l.detail)}</td><td>${esc(l.ip)}</td></tr>`).join('')
+          || '<tr><td colspan="6" class="text-center text-charcoal-muted">Chưa có bản ghi.</td></tr>';
+        const pg = document.getElementById('pagination');
+        pg.innerHTML = '';
+        for (let i = d.pagination.startPage; i <= d.pagination.endPage; i++) {
+          pg.innerHTML += `<li class="page-item ${i === d.pagination.currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" onclick="loadLogs(${i});return false;">${i + 1}</a></li>`;
+        }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', () => loadLogs(0));
+  </script>
+</div>
+</html>

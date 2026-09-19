@@ -28,7 +28,7 @@ public class InventoryController {
 	@GetMapping
 	public String showInventory(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/Inventory";
+		return "admin/inventory";
 	}
 
 	@GetMapping("/api")
@@ -65,10 +65,38 @@ public class InventoryController {
 		return inventoryService.deleteInventory(productId);
 	}
 
+	// threshold không truyền => dùng ngưỡng cảnh báo riêng của từng biến thể
 	@GetMapping("/api/low-stock")
 	@ResponseBody
-	public ResponseDataDto getLowStockInventories(@RequestParam(defaultValue = "5") int threshold) {
+	public ResponseDataDto getLowStockInventories(@RequestParam(required = false) Integer threshold) {
 		return inventoryService.getLowStockInventories(threshold);
+	}
+
+	@GetMapping("/api/variant/{variantId}")
+	@ResponseBody
+	public ResponseDataDto getVariantInventory(@PathVariable Long variantId) {
+		return inventoryService.getVariantInventory(variantId);
+	}
+
+	@PutMapping("/api/variant/{variantId}")
+	@ResponseBody
+	public ResponseDataDto updateVariantStock(@PathVariable Long variantId, @RequestParam int quantity,
+			@RequestParam(required = false) String note, @RequestParam(required = false) Integer lowStockThreshold) {
+		return inventoryService.updateVariantStock(variantId, quantity, note, lowStockThreshold);
+	}
+
+	@DeleteMapping("/api/variant/{variantId}")
+	@ResponseBody
+	public ResponseDataDto deleteVariantInventory(@PathVariable Long variantId) {
+		return inventoryService.deleteVariantInventory(variantId);
+	}
+
+	@GetMapping("/api/movements")
+	@ResponseBody
+	public ResponseDataDto getMovements(@RequestParam(required = false) Long variantId,
+			@RequestParam(required = false) String productId, @RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "10") int size) {
+		return inventoryService.getMovements(variantId, productId, page, size);
 	}
 
 	@GetMapping("/api/product/{productId}")

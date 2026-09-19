@@ -34,7 +34,7 @@ public class PurchaseEntryController {
 	@GetMapping
 	public String showPurchaseEntry(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/PurchaseEntry";
+		return "admin/purchase-entries";
 	}
 
 	@GetMapping("/api")

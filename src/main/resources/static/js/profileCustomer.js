@@ -11,51 +11,51 @@ export function loadProfile() {
 		currentUserId = u.userId; // Gán userId cho phần upload ảnh
 
 		$('#profile-content').html(`
-      <div class="card p-4">
-        <h5 class="mb-3 text-center">Hồ sơ của bạn</h5>
-        <div class="text-center mb-3">
+      <div class="border border-line p-8 max-w-xl">
+        <h5 class="font-heading text-lg text-charcoal text-center mb-6">Hồ sơ của bạn</h5>
+        <div class="text-center mb-6">
           <img src="${u.userImage ? `/api/imgUser/${u.userImage}` : '/img/default.png'}"
                alt="Avatar"
                id="avatarPreview"
-               class="rounded-circle"
+               class="rounded-full mx-auto"
                style="width:120px; height:120px; object-fit:cover;">
-          <div class="mt-2">
-            <input type="file" id="inputAvatar" accept="image/*" class="form-control" style="max-width: 300px; margin: 0 auto;">
-            <button class="btn btn-sm btn-outline-primary mt-2" id="btnUploadAvatar">Cập nhật ảnh đại diện</button>
+          <div class="mt-3">
+            <input type="file" id="inputAvatar" accept="image/*" class="input-field mx-auto" style="max-width: 300px;">
+            <button class="btn-secondary !px-4 !py-2 text-xs mt-3" id="btnUploadAvatar">Cập nhật ảnh đại diện</button>
           </div>
         </div>
-        <div id="view-profile">
-          <p><strong>Họ tên:</strong> ${u.fullName || '-'}</p>
-          <p><strong>Username:</strong> ${u.username}</p>
-          <p><strong>Email:</strong> ${u.email}</p>
-          <p><strong>Điện thoại:</strong> ${u.phone || '-'}</p>
-          <p><strong>Địa chỉ:</strong> ${u.address || '-'}</p>
-          <p><strong>Trạng thái:</strong> ${u.status}</p>
-          <div class="text-end">
-            <button class="btn btn-primary" id="btnEditProfile">Chỉnh sửa</button>
+        <div id="view-profile" class="space-y-2 text-sm text-charcoal-soft">
+          <p><strong class="text-charcoal">Họ tên:</strong> ${u.fullName || '-'}</p>
+          <p><strong class="text-charcoal">Username:</strong> ${u.username}</p>
+          <p><strong class="text-charcoal">Email:</strong> ${u.email}</p>
+          <p><strong class="text-charcoal">Điện thoại:</strong> ${u.phone || '-'}</p>
+          <p><strong class="text-charcoal">Địa chỉ:</strong> ${u.address || '-'}</p>
+          <p><strong class="text-charcoal">Trạng thái:</strong> ${u.status}</p>
+          <div class="text-right pt-2">
+            <button class="btn-primary" id="btnEditProfile">Chỉnh sửa</button>
           </div>
         </div>
 
-        <form id="edit-profile" style="display:none;">
-          <div class="mb-2">
-            <label class="form-label">Họ tên</label>
-            <input type="text" class="form-control" id="inputFullName" value="${u.fullName || ''}">
+        <form id="edit-profile" style="display:none;" class="space-y-3">
+          <div>
+            <label class="label-field">Họ tên</label>
+            <input type="text" class="input-field" id="inputFullName" value="${u.fullName || ''}">
           </div>
-          <div class="mb-2">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" id="inputEmail" value="${u.email}">
+          <div>
+            <label class="label-field">Email</label>
+            <input type="email" class="input-field" id="inputEmail" value="${u.email}">
           </div>
-          <div class="mb-2">
-            <label class="form-label">Điện thoại</label>
-            <input type="text" class="form-control" id="inputPhone" value="${u.phone || ''}">
+          <div>
+            <label class="label-field">Điện thoại</label>
+            <input type="text" class="input-field" id="inputPhone" value="${u.phone || ''}">
           </div>
-          <div class="mb-2">
-            <label class="form-label">Địa chỉ</label>
-            <input type="text" class="form-control" id="inputAddress" value="${u.address || ''}">
+          <div>
+            <label class="label-field">Địa chỉ</label>
+            <input type="text" class="input-field" id="inputAddress" value="${u.address || ''}">
           </div>
-          <div class="text-end">
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <button type="button" class="btn btn-secondary" id="btnCancelEdit">Hủy</button>
+          <div class="text-right pt-2 flex justify-end gap-2">
+            <button type="button" class="btn-secondary" id="btnCancelEdit">Hủy</button>
+            <button type="submit" class="btn-primary">Lưu</button>
           </div>
         </form>
       </div>

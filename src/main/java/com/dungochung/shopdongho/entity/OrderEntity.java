@@ -4,6 +4,7 @@ import com.dungochung.shopdongho.enums.OrderStatus;
 import com.dungochung.shopdongho.enums.PaymentMethod;
 import com.dungochung.shopdongho.enums.PaymentStatus;
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +36,25 @@ public class OrderEntity {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "order_status", nullable = false)
 	private OrderStatus orderStatus;
+
+	/** Lý do hủy/hoàn (bắt buộc khi chuyển sang canceled/refunded). */
+	@Column(name = "cancel_reason", length = 255)
+	private String cancelReason;
+
+	/** Ai hủy: CUSTOMER hoặc ADMIN (kèm tên trong cancelledByName). */
+	@Column(name = "cancelled_by", length = 20)
+	private String cancelledBy;
+
+	@Column(name = "cancelled_by_name", length = 100)
+	private String cancelledByName;
+
+	@Column(name = "cancelled_at")
+	private LocalDateTime cancelledAt;
+
+	/** Đơn tạo bằng luồng mới đã giữ tồn kho; đơn cũ (false) chuyển trạng thái mà không tác động kho. */
+	@Column(name = "stock_reserved", nullable = false)
+	@ColumnDefault("false")
+	private boolean stockReserved = false;
 
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
@@ -74,6 +94,17 @@ public class OrderEntity {
 		this.updatedAt = updatedAt;
 		this.orderItems = orderItems;
 	}
+
+	public String getCancelReason() { return cancelReason; }
+	public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+	public String getCancelledBy() { return cancelledBy; }
+	public void setCancelledBy(String cancelledBy) { this.cancelledBy = cancelledBy; }
+	public String getCancelledByName() { return cancelledByName; }
+	public void setCancelledByName(String cancelledByName) { this.cancelledByName = cancelledByName; }
+	public LocalDateTime getCancelledAt() { return cancelledAt; }
+	public void setCancelledAt(LocalDateTime cancelledAt) { this.cancelledAt = cancelledAt; }
+	public boolean isStockReserved() { return stockReserved; }
+	public void setStockReserved(boolean stockReserved) { this.stockReserved = stockReserved; }
 
 	public Integer getOrderId() {
 		return orderId;

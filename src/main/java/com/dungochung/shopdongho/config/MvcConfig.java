@@ -1,5 +1,6 @@
 package com.dungochung.shopdongho.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -11,6 +12,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class MvcConfig implements WebMvcConfigurer {
 	@Value("${upload.dir}")
 	private String uploadDir;
+
+	@Autowired
+	private RoleInterceptor roleInterceptor;
 
 	/*
 	 * @Override public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -33,7 +37,7 @@ public class MvcConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(new RoleInterceptor()).addPathPatterns("/admin/**") // áp dụng tất cả đường dẫn /admin/*
+		registry.addInterceptor(roleInterceptor).addPathPatterns("/admin/**") // áp dụng tất cả đường dẫn /admin/*
 				.excludePathPatterns("/admin/login", "/admin/login/**"); // không chặn trang đăng nhập
 	}
 

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout/storefront :: head('Chi tiết sản phẩm')}"></head>
+<body th:attr="data-product-id=${productId}">
+	<div th:replace="~{layout/storefront :: navbar}"></div>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10">
+		<!-- Breadcrumb -->
+		<div class="breadcrumb text-sm text-charcoal-muted mb-8">
+			<a href="/" class="hover:text-charcoal">Trang chủ</a> / <span id="product-name" class="text-charcoal">Tên
+				sản phẩm</span>
+			<!-- sẽ được thay đổi bằng JS -->
+		</div>
+
+		<div class="product-detail flex flex-col md:flex-row gap-10">
+			<!-- Vùng ảnh -->
+			<div class="images flex flex-1 gap-4">
+				<div class="thumbs-wrapper hidden md:flex flex-col items-center gap-2 w-[70px]">
+					<div id="thumbnail-images" class="thumbs flex flex-col gap-2 max-h-[500px] overflow-y-auto">
+						<!-- JS sẽ render <img> thumbnail tại đây -->
+					</div>
+				</div>
+
+				<div class="main-image flex-1 flex items-center justify-center">
+					<div class="image-wrapper relative inline-block max-w-full">
+						<img id="main-image" src="/img/default.png" alt="Sản phẩm"
+							class="block max-w-full max-h-[500px] object-cover border border-line" />
+						<div class="badge-sale" style="display:none">-5%</div>
+					</div>
+				</div>
+
+			</div>
+
+			<!-- Thông tin sản phẩm -->
+			<div class="info flex-1">
+				<h1 id="product-name-title" class="font-heading text-2xl text-charcoal mb-3">Tên sản phẩm</h1>
+
+				<p class="text-sm text-charcoal-soft mb-1">
+					<strong class="text-charcoal">Thương hiệu:</strong> <span id="brand-name">Đang cập nhật</span>
+				</p>
+				<p class="text-sm text-charcoal-soft mb-1">
+					<strong class="text-charcoal">Xuất xứ:</strong> <span id="origin">Đang cập nhật</span>
+				</p>
+				<p class="text-sm text-charcoal-soft mb-1">
+					<strong class="text-charcoal">Bảo hành:</strong> <span id="warranty">Đang cập nhật</span>
+				</p>
+				<p class="text-sm text-charcoal-soft mb-4">
+					<strong class="text-charcoal">Giới tính:</strong> <span id="gender">Đang cập nhật</span>
+				</p>
+
+				<div class="prices flex items-baseline gap-3 mb-4">
+					<span id="discount-price" class="price-current text-2xl">--</span>
+					<span id="original-price" class="price-original"></span>
+				</div>
+
+				<p class="text-sm mb-6">
+					<strong class="text-charcoal">Tình trạng:</strong> <span class="in-stock text-success">Còn
+						hàng</span>
+				</p>
+
+				<!-- Số lượng và nút -->
+				<div class="actions flex items-center gap-4 mb-8">
+					<div class="qty flex items-center border border-line">
+						<button onclick="decreaseQuantity()" class="w-10 h-10 hover:bg-ivory transition-colors">–</button>
+						<input id="quantity" type="number" value="1" min="1"
+							class="w-14 h-10 text-center border-x border-line focus:outline-none" />
+						<button onclick="increaseQuantity()" class="w-10 h-10 hover:bg-ivory transition-colors">+</button>
+					</div>
+					<button class="btn-secondary" id="add-to-cart-btn">Thêm vào giỏ</button>
+					<button class="btn-primary" id="buy-now-btn">Mua ngay</button>
+				</div>
+
+				<!-- Tabs -->
+				<div class="tabs flex gap-4 border-b border-line mb-4">
+					<button class="tab active pb-3 text-sm tracking-wide2 uppercase" data-tab="detail">Chi tiết sản
+						phẩm</button>
+				</div>
+
+
+			</div>
+		</div>
+		<div class="tab-content active mt-4" id="detail">
+			<h2 class="font-heading text-xl text-charcoal mb-2">Mô tả</h2>
+			<p id="description" class="text-sm text-charcoal-soft leading-relaxed mb-8">Đang tải mô tả...</p>
+			<h2 class="font-heading text-xl text-charcoal mb-2">Chi tiết sản phẩm</h2>
+			<table id="product-detail-table" class="table-detail w-full text-sm">
+				<!-- JavaScript sẽ render nội dung bảng tại đây -->
+			</table>
+		</div>
+
+
+	</div>
+	<div th:replace="~{layout/cart-drawer :: cartDrawer}"></div>
+	<div th:replace="~{layout/storefront :: footer}"></div>
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+	<script type="module" src="/js/detail-product.js"></script>
+</body>
+</html>

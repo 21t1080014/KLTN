@@ -46,7 +46,7 @@ function initQuickView() {
             `);
 						slides.push(`
               <div class="carousel-item ${active}">
-                <img src="/api/img/${img.url}" class="d-block w-100" alt="">
+                <img src="/api/img/${img.url}" class="d-block w-100" alt="${p.name || ''}">
               </div>
             `);
 					});
@@ -84,12 +84,12 @@ function initQuickView() {
 							.prop('disabled', true)
 							.text('Hết hàng')
 							.addClass('btn-secondary')
-							.removeClass('btn-dark');
+							.removeClass('btn-primary');
 					} else {
 						$('#qv-add-to-cart')
 							.prop('disabled', false)
 							.text('Thêm vào giỏ')
-							.addClass('btn-dark')
+							.addClass('btn-primary')
 							.removeClass('btn-secondary');
 					}
 					// Hiển thị modal
@@ -259,7 +259,7 @@ $(document).on('click', '.add-to-cart-btn', function(e) {
 	e.preventDefault();
 	const productId = $(this).data('id');
 	const name = $(this).closest('.product-card').find('.card-title').text();
-	const price = $(this).closest('.product-card').find('.text-danger').text();
+	const price = $(this).closest('.product-card').find('.price-current').text();
 	const img = $(this).closest('.product-card').find('img').attr('src');
 
 	let cart = JSON.parse(localStorage.getItem("cart")) || [];

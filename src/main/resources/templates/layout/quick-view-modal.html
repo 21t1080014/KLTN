@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+	<!-- layout/quick-view-modal.html -->
+	<div th:fragment="quickViewModal" class="modal fade" id="quickViewModal" tabindex="-1"
+		aria-labelledby="quickViewLabel" aria-hidden="true">
+		<div class="modal-dialog modal-xl modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-body p-6 md:p-8">
+					<button type="button" class="btn-close absolute top-4 right-4" data-bs-dismiss="modal"></button>
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<!-- Ảnh -->
+						<div class="text-center">
+							<div id="qvCarousel" class="carousel slide" data-bs-ride="carousel">
+
+								<!-- Indicators -->
+								<div class="carousel-indicators" id="qv-indicators">
+									<!-- JS sẽ render -->
+								</div>
+
+								<!-- Wrapper for slides -->
+								<div class="carousel-inner" id="qv-carousel-inner">
+									<!-- JS sẽ render -->
+								</div>
+
+								<!-- Controls -->
+								<button class="carousel-control-prev" type="button" data-bs-target="#qvCarousel"
+									data-bs-slide="prev">
+									<span class="carousel-control-prev-icon"></span>
+								</button>
+								<button class="carousel-control-next" type="button" data-bs-target="#qvCarousel"
+									data-bs-slide="next">
+									<span class="carousel-control-next-icon"></span>
+								</button>
+							</div>
+						</div>
+						<!-- Thông tin -->
+						<div class="text-left">
+							<h4 id="qv-name" class="font-heading text-xl text-charcoal mb-2"></h4>
+							<p class="text-xs text-charcoal-muted mb-3">
+								SKU: <span id="qv-sku"></span>
+							</p>
+							<div class="flex items-baseline flex-wrap gap-2 mb-4">
+								<strong id="qv-discounted" class="price-current"></strong>
+								<small id="qv-original" class="price-original"></small>
+							</div>
+							<p id="qv-description" class="text-sm text-charcoal-soft leading-relaxed mb-4"></p>
+							<div class="flex items-center gap-3 mb-4">
+								<button class="btn-icon" onclick="decrementQty()" aria-label="Giảm">–</button>
+								<input id="qv-qty" type="text" value="1" class="input-field w-16 text-center" />
+								<button class="btn-icon" onclick="incrementQty()" aria-label="Tăng">+</button>
+							</div>
+							<button id="qv-add-to-cart" class="btn-primary" data-product-id="${p.productId}">Thêm
+								vào giỏ</button>
+
+							<div class="mt-4">
+								<a id="qv-detail-link" href="#" class="text-sm text-gold-dark hover:underline">Xem
+									chi tiết »</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

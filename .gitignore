@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Node / Tailwind ###
+node_modules/
+
+### DB backups (dump có thể chứa dữ liệu thật, không commit) ###
+db-backups/
+
 ### STS ###
 .apt_generated
 .classpath

@@ -10,10 +10,14 @@ import org.springframework.stereotype.Repository;
 import com.dungochung.shopdongho.entity.UserEntity;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, String> {
+public interface UserRepository extends JpaRepository<UserEntity, String>, UserRepositoryCustom {
 	boolean existsByUsername(String username);
 
 	boolean existsByEmail(String email);
+
+	Optional<UserEntity> findFirstByRole_RoleNameAndStatus(String roleName, com.dungochung.shopdongho.enums.UserStatus status);
+
+	long countByRole_RoleNameAndStatus(String roleName, com.dungochung.shopdongho.enums.UserStatus status);
 
 	Optional<UserEntity> findByUsernameOrEmail(String username, String email);
 	Page<UserEntity> findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCase(

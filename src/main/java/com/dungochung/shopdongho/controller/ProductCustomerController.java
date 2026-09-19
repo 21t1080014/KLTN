@@ -57,9 +57,12 @@ public class ProductCustomerController {
 	}
 
 	@PutMapping("/user-customer/avatar")
-	public ResponseDataDto updateAvatar(@RequestParam("userId") String userId,
-			@RequestParam("file") MultipartFile file) {
-		return userService.updateCustomerAvatar(userId, file);
+	public ResponseDataDto updateAvatar(@RequestParam("file") MultipartFile file, HttpSession session) {
+		UserEntity currentUser = (UserEntity) session.getAttribute("currentUser");
+		if (currentUser == null) {
+			return new ResponseDataDto(401, "Bạn chưa đăng nhập", null);
+		}
+		return userService.updateCustomerAvatar(currentUser.getUserId(), file);
 	}
 
 	@PutMapping("/user-customer")
@@ -169,14 +172,35 @@ public class ProductCustomerController {
 	}
 
 	@PostMapping("/create-orders")
-	public ResponseDataDto createOrder(@RequestParam String userId, @RequestParam BigDecimal totalPrice,
-			@RequestParam PaymentMethod paymentMethod, @RequestBody List<OrderItemEntity> items) {
-		return orderService.createOrder(userId, items, totalPrice, paymentMethod);
+	public ResponseDataDto createOrder(@RequestParam BigDecimal totalPrice,
+			@RequestParam PaymentMethod paymentMethod, @RequestBody List<OrderItemEntity> items, HttpSession session) {
+		UserEntity currentUser = (UserEntity) session.getAttribute("currentUser");
+		if (currentUser == null) {
+			return new ResponseDataDto(401, "Bạn chưa đăng nhập", null);
+		}
+		// Chủ sở hữu đơn hàng luôn lấy từ session, không tin userId do client gửi lên (chống IDOR)
+		return orderService.createOrder(currentUser.getUserId(), items, totalPrice, paymentMethod);
+	}
+
+	/** Khách tự hủy đơn của chính mình (chỉ khi chưa vào đóng gói). Chủ đơn lấy từ session, không tin client. */
+	@PostMapping("/orders/{orderId}/cancel")
+	public ResponseDataDto cancelOrder(@PathVariable Integer orderId, @RequestParam(required = false) String reason,
+			HttpSession session) {
+		UserEntity currentUser = (UserEntity) session.getAttribute("currentUser");
+		if (currentUser == null) {
+			return new ResponseDataDto(401, "Bạn chưa đăng nhập", null);
+		}
+		return orderService.cancelByCustomer(currentUser.getUserId(), orderId, reason, currentUser.getUsername());
 	}
 
 	@PostMapping("/apply-voucher")
-	public ResponseDataDto applyVoucher(@RequestBody ApplyVoucherRequestDto request) {
-		return orderService.applyVoucher(request.getUserId(), request.getTotalPrice(), request.getVoucherCode());
+	public ResponseDataDto applyVoucher(@RequestBody ApplyVoucherRequestDto request, HttpSession session) {
+		UserEntity currentUser = (UserEntity) session.getAttribute("currentUser");
+		if (currentUser == null) {
+			return new ResponseDataDto(401, "Bạn chưa đăng nhập", null);
+		}
+		// Chủ sở hữu voucher luôn lấy từ session, không tin userId do client gửi lên (chống IDOR)
+		return orderService.applyVoucher(currentUser.getUserId(), request.getTotalPrice(), request.getVoucherCode());
 	}
 
 }

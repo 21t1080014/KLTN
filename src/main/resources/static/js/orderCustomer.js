@@ -6,6 +6,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	showCart();
 	initSearchSuggestions();
 });
+function escapeHtml(v) {
+	return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function cancelOrder(orderId) {
+	const reason = window.prompt('Lý do hủy đơn hàng (không bắt buộc):', '');
+	if (reason === null) return; // người dùng bấm Hủy hộp thoại
+	$.post(`/api/orders/${orderId}/cancel`, { reason: reason }, function(res) {
+		if (res.responseCode === 1) {
+			loadOrders(0);
+		} else {
+			window.alert(res.responseMsg || 'Không thể hủy đơn hàng');
+		}
+	});
+}
+
 function loadOrders(page = 0) {
 	$.get(`/api/orders?page=${page}&size=2`, function(response) {
 		if (response.responseCode !== 1) {
@@ -23,25 +39,36 @@ function loadOrders(page = 0) {
 		orders.forEach(order => {
 			const itemsHtml = order.items.map(item => `
 					<tr>
-						<td>${item.productName}</td>
-						<td>${item.quantity}</td>
-						<td>${item.unitPrice}</td>
-						<td>${item.total}</td>
+						<td class="py-2 text-sm text-charcoal-soft">${item.productName}</td>
+						<td class="py-2 text-sm text-charcoal-soft text-center">${item.quantity}</td>
+						<td class="py-2 text-sm text-charcoal-soft text-right">${item.unitPrice}</td>
+						<td class="py-2 text-sm text-charcoal text-right">${item.total}</td>
 					</tr>`).join("");
 
 			container.append(`
-					<div class="order">
-						<div><strong>Mã đơn hàng:</strong> ${order.orderId}</div>
-						<div><strong>Ngày tạo:</strong> ${order.createdAt}</div>
-						<div><strong>Tổng tiền:</strong> ${order.totalPrice} VNĐ</div>
-						<div><strong>Phương thức thanh toán:</strong> ${order.paymentMethod}</div>
-						<div><strong>Trạng thái thanh toán:</strong> ${order.paymentStatus}</div>
-						<div><strong>Trạng thái đơn hàng:</strong> ${order.orderStatus}</div>
-						<h4>Sản phẩm:</h4>
-						<table>
-							<thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
-							<tbody>${itemsHtml}</tbody>
+					<div class="order border border-line p-6">
+						<div class="grid grid-cols-2 gap-2 text-sm text-charcoal-soft mb-4">
+							<div><strong class="text-charcoal">Mã đơn hàng:</strong> ${order.orderId}</div>
+							<div><strong class="text-charcoal">Ngày tạo:</strong> ${order.createdAt}</div>
+							<div><strong class="text-charcoal">Tổng tiền:</strong> ${order.totalPrice} VNĐ</div>
+							<div><strong class="text-charcoal">Phương thức thanh toán:</strong> ${order.paymentMethod}</div>
+							<div><strong class="text-charcoal">Trạng thái thanh toán:</strong> ${order.paymentStatusLabel || order.paymentStatus}</div>
+							<div><strong class="text-charcoal">Trạng thái đơn hàng:</strong> ${order.orderStatusLabel || order.orderStatus}</div>
+							${order.cancelReason ? `<div class="col-span-2"><strong class="text-charcoal">Lý do hủy/hoàn:</strong> ${escapeHtml(order.cancelReason)}</div>` : ''}
+						</div>
+						<h4 class="text-sm tracking-wide2 uppercase text-charcoal mb-2">Sản phẩm</h4>
+						<table class="w-full">
+							<thead>
+								<tr class="border-b border-line">
+									<th class="py-2 text-left text-xs text-charcoal-muted">Sản phẩm</th>
+									<th class="py-2 text-center text-xs text-charcoal-muted">Số lượng</th>
+									<th class="py-2 text-right text-xs text-charcoal-muted">Đơn giá</th>
+									<th class="py-2 text-right text-xs text-charcoal-muted">Thành tiền</th>
+								</tr>
+							</thead>
+							<tbody class="divide-y divide-line">${itemsHtml}</tbody>
 						</table>
+						${order.canCancel ? `<div class="mt-4 text-right"><button type="button" class="border border-charcoal px-4 py-2 text-xs tracking-wide2 uppercase text-charcoal hover:bg-charcoal hover:text-white" onclick="cancelOrder(${order.orderId})">Hủy đơn hàng</button></div>` : ''}
 					</div>
 				`);
 		});
@@ -116,4 +143,5 @@ $(document).ready(() => {
 	loadOrders(); // gọi trang đầu tiên khi vừa load
 });
 window.loadOrders = loadOrders;
+window.cancelOrder = cancelOrder;
 window.renderPagination = renderPagination;

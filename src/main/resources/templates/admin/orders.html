@@ -1,0 +1,306 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<h1 class="font-heading text-2xl text-charcoal mb-2">Quản lý Đơn Hàng</h1>
+	<p class="text-sm text-charcoal-muted mb-6">
+		Luồng: Chờ xác nhận → Đã xác nhận → Đang đóng gói → Đang giao → Đã giao → Hoàn thành. Có thể hủy trước khi giao xong; đơn đã giao có thể hoàn tiền/trả hàng.
+	</p>
+
+	<!-- Alert thông báo -->
+	<div id="alertBox" class="alert hidden" role="alert"></div>
+
+	<div class="mb-4 flex items-center gap-3">
+		<label for="statusFilter" class="text-sm text-charcoal">Lọc theo trạng thái:</label>
+		<select id="statusFilter" class="form-select w-auto" onchange="fetchOrders(0)">
+			<option value="">Tất cả</option>
+		</select>
+	</div>
+
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Ngày tạo</th>
+				<th>Email KH</th>
+				<th>Tổng tiền</th>
+				<th>Phương thức TT</th>
+				<th>Thanh toán</th>
+				<th>Trạng thái đơn</th>
+				<th>Hành động</th>
+			</tr>
+		</thead>
+		<tbody id="order-table-body"></tbody>
+	</table>
+
+	<nav>
+		<ul class="pagination mt-4" id="pagination"></ul>
+	</nav>
+
+	<!-- Modal chi tiết + thao tác -->
+	<div class="modal fade" id="detailModal" tabindex="-1">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Đơn hàng #<span id="dOrderId"></span></h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" id="detailOrderId" />
+					<div class="grid grid-cols-2 gap-2 text-sm mb-4">
+						<div><strong>Khách hàng:</strong> <span id="dCustomer"></span></div>
+						<div><strong>Liên hệ:</strong> <span id="dContact"></span></div>
+						<div class="col-span-2"><strong>Địa chỉ:</strong> <span id="dAddress"></span></div>
+						<div><strong>Ngày tạo:</strong> <span id="dCreated"></span></div>
+						<div><strong>Phương thức TT:</strong> <span id="dMethod"></span></div>
+						<div><strong>Trạng thái đơn:</strong> <span id="dStatus"></span></div>
+						<div><strong>Thanh toán:</strong> <span id="dPayment"></span></div>
+						<div class="col-span-2" id="dCancelRow"><strong>Lý do hủy/hoàn:</strong> <span id="dCancel"></span></div>
+					</div>
+
+					<h6 class="font-semibold mb-2">Sản phẩm</h6>
+					<table class="table table-bordered mb-4">
+						<thead>
+							<tr><th>SKU</th><th>Sản phẩm</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
+						</thead>
+						<tbody id="dItems"></tbody>
+					</table>
+					<div class="text-right text-sm mb-4"><strong>Tổng thanh toán:</strong> <span id="dTotal"></span></div>
+
+					<div id="actionArea" class="border border-line p-3 mb-4">
+						<div class="mb-2 text-sm font-semibold">Chuyển trạng thái đơn</div>
+						<div id="nextButtons" class="flex flex-wrap gap-2 mb-2"></div>
+						<textarea id="reasonInput" class="form-control mb-2" rows="2" maxlength="255"
+							placeholder="Lý do (bắt buộc khi Hủy đơn / Hoàn tiền-trả hàng)"></textarea>
+						<div class="mb-2 text-sm font-semibold">Thanh toán</div>
+						<div id="paymentButtons" class="flex flex-wrap gap-2"></div>
+						<div id="noAction" class="text-sm text-charcoal-muted">Bạn không có thao tác nào khả dụng cho đơn này.</div>
+					</div>
+
+					<h6 class="font-semibold mb-2">Lịch sử xử lý</h6>
+					<table class="table table-bordered">
+						<thead>
+							<tr><th>Thời gian</th><th>Loại</th><th>Từ</th><th>Sang</th><th>Người thực hiện</th><th>Ghi chú</th></tr>
+						</thead>
+						<tbody id="dHistory"></tbody>
+					</table>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-danger me-auto" id="deleteBtn" onclick="openDeleteModal()">Xóa đơn</button>
+					<button class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal xác nhận xóa -->
+	<div class="modal fade" id="deleteModal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Xác nhận xóa đơn hàng</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<p>
+						Bạn có chắc chắn muốn xóa đơn hàng <span id="deleteOrderIdText"></span> không?
+						Chỉ xóa được đơn chưa thanh toán và đang chờ xác nhận; các đơn khác hãy dùng Hủy đơn.
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+					<button class="btn btn-danger" onclick="confirmDelete()">Xóa</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+    let currentPage = 0;
+    const pageSize = 10;
+    let statusLabels = {};
+    let paymentLabels = {};
+
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const money = v => Number(v).toLocaleString('vi-VN') + '₫';
+    const sLabel = s => statusLabels[s] || s;
+    const pLabel = s => paymentLabels[s] || s;
+
+    function showAlert(message, type = 'success') {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.className = `alert alert-${type}`;
+      alertBox.textContent = message;
+      alertBox.classList.remove('hidden');
+      setTimeout(() => alertBox.classList.add('hidden'), 4000);
+    }
+
+    function initFilter() {
+      const sel = document.getElementById('statusFilter');
+      if (sel.options.length > 1) return;
+      ['pending','confirmed','packing','shipping','delivered','completed','canceled','refunded'].forEach(s => {
+        const o = document.createElement('option');
+        o.value = s; o.textContent = sLabel(s);
+        sel.appendChild(o);
+      });
+    }
+
+    function fetchOrders(page = 0) {
+      const status = document.getElementById('statusFilter').value;
+      fetch(`/admin/orders/api?page=${page}&size=${pageSize}` + (status ? `&status=${status}` : ''))
+        .then(res => res.json())
+        .then(res => {
+          const tbody = document.getElementById("order-table-body");
+          const paginationContainer = document.getElementById("pagination");
+          if (res.responseCode !== 1) {
+            showAlert("Không thể tải đơn hàng!", "danger");
+            return;
+          }
+          if (!res.data || !res.data.orders) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-charcoal-muted">Không có đơn hàng nào.</td></tr>';
+            paginationContainer.innerHTML = '';
+            return;
+          }
+          statusLabels = res.data.statusLabels;
+          paymentLabels = res.data.paymentLabels;
+          initFilter();
+          const pagination = res.data.pagination;
+
+          tbody.innerHTML = res.data.orders.map(o => `
+            <tr>
+              <td>${o.orderId}</td>
+              <td>${esc(o.createdAt)}</td>
+              <td>${esc(o.email)}</td>
+              <td>${money(o.totalPrice)}</td>
+              <td>${esc(o.paymentMethod)}</td>
+              <td>${esc(pLabel(o.paymentStatus))}</td>
+              <td>${esc(sLabel(o.orderStatus))}</td>
+              <td><button class="btn btn-sm btn-primary" onclick="openDetail(${o.orderId})">Chi tiết / Xử lý</button></td>
+            </tr>`).join('');
+
+          paginationContainer.innerHTML = '';
+          for (let i = pagination.startPage; i <= pagination.endPage; i++) {
+            paginationContainer.innerHTML += `
+              <li class="page-item ${i === pagination.currentPage ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="fetchOrders(${i});return false;">${i + 1}</a>
+              </li>`;
+          }
+          currentPage = pagination.currentPage;
+        });
+    }
+
+    function openDetail(orderId, keepOpen) {
+      fetch(`/admin/orders/api/${orderId}`)
+        .then(res => res.json())
+        .then(res => {
+          if (res.responseCode !== 1) { showAlert(res.responseMsg, 'danger'); return; }
+          const d = res.data;
+          statusLabels = d.statusLabels; paymentLabels = d.paymentLabels;
+          document.getElementById('detailOrderId').value = d.orderId;
+          document.getElementById('dOrderId').textContent = d.orderId;
+          const c = d.customer || {};
+          document.getElementById('dCustomer').textContent = c.fullName || '';
+          document.getElementById('dContact').textContent = [c.email, c.phone].filter(Boolean).join(' · ');
+          document.getElementById('dAddress').textContent = c.address || '';
+          document.getElementById('dCreated').textContent = d.createdAt;
+          document.getElementById('dMethod').textContent = d.paymentMethod;
+          document.getElementById('dStatus').textContent = sLabel(d.orderStatus);
+          document.getElementById('dPayment').textContent = pLabel(d.paymentStatus);
+          const cancelRow = document.getElementById('dCancelRow');
+          if (d.cancelReason) {
+            cancelRow.classList.remove('hidden');
+            document.getElementById('dCancel').textContent = d.cancelReason + (d.cancelledByName ? ` (${d.cancelledBy === 'CUSTOMER' ? 'khách' : 'nhân viên'}: ${d.cancelledByName})` : '');
+          } else {
+            cancelRow.classList.add('hidden');
+          }
+          document.getElementById('dItems').innerHTML = d.items.map(i => `
+            <tr><td>${esc(i.sku)}</td><td>${esc(i.productName)}${i.variantName ? ' – ' + esc(i.variantName) : ''}</td>
+            <td>${i.quantity}</td><td>${money(i.unitPrice)}</td><td>${money(i.total)}</td></tr>`).join('');
+          document.getElementById('dTotal').textContent = money(d.totalPrice);
+
+          const next = document.getElementById('nextButtons');
+          next.innerHTML = d.allowedNext.map(s => {
+            const danger = (s === 'canceled' || s === 'refunded');
+            return `<button class="btn btn-sm ${danger ? 'btn-danger' : 'btn-primary'}" onclick="changeStatus('${s}')">→ ${esc(sLabel(s))}</button>`;
+          }).join('');
+          const pay = document.getElementById('paymentButtons');
+          pay.innerHTML = d.allowedPayment.map(s =>
+            `<button class="btn btn-sm btn-secondary" onclick="changePayment('${s}')">→ ${esc(pLabel(s))}</button>`).join('');
+          const hasAction = d.allowedNext.length || d.allowedPayment.length;
+          document.getElementById('noAction').classList.toggle('hidden', !!hasAction);
+          document.getElementById('reasonInput').classList.toggle('hidden', !d.allowedNext.some(s => s === 'canceled' || s === 'refunded') && !d.allowedPayment.length);
+          document.getElementById('reasonInput').value = '';
+          document.getElementById('deleteBtn').classList.toggle('hidden', !(d.orderStatus === 'pending' && d.paymentStatus === 'pending'));
+
+          document.getElementById('dHistory').innerHTML = d.history.map(h => `
+            <tr><td>${esc(h.at)}</td><td>${h.kind === 'PAYMENT' ? 'Thanh toán' : (h.kind === 'CREATED' ? 'Tạo đơn' : 'Trạng thái')}</td>
+            <td>${esc(h.kind === 'PAYMENT' ? pLabel(h.from) : sLabel(h.from))}</td>
+            <td>${esc(h.kind === 'PAYMENT' ? pLabel(h.to) : sLabel(h.to))}</td>
+            <td>${esc(h.by)} (${esc(h.role)})</td><td>${esc(h.reason)}</td></tr>`).join('')
+            || '<tr><td colspan="6" class="text-center text-charcoal-muted">Đơn cũ, chưa có lịch sử.</td></tr>';
+
+          if (!keepOpen) {
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+          }
+        });
+    }
+
+    function call(url, okMsg) {
+      fetch(url, { method: 'PUT' })
+        .then(res => res.json())
+        .then(res => {
+          if (res.responseCode === 1) {
+            showAlert(okMsg || res.responseMsg);
+            openDetail(document.getElementById('detailOrderId').value, true);
+            fetchOrders(currentPage);
+          } else {
+            showAlert(res.responseMsg, 'danger');
+          }
+        });
+    }
+
+    function changeStatus(to) {
+      const id = document.getElementById('detailOrderId').value;
+      const reason = document.getElementById('reasonInput').value.trim();
+      if ((to === 'canceled' || to === 'refunded') && !reason) {
+        showAlert('Vui lòng nhập lý do trước khi ' + (to === 'canceled' ? 'hủy đơn' : 'hoàn tiền/trả hàng'), 'danger');
+        document.getElementById('reasonInput').focus();
+        return;
+      }
+      if (!confirm(`Chuyển đơn #${id} sang "${sLabel(to)}"?`)) return;
+      call(`/admin/orders/api/${id}/status?to=${to}&reason=${encodeURIComponent(reason)}`);
+    }
+
+    function changePayment(to) {
+      const id = document.getElementById('detailOrderId').value;
+      const note = document.getElementById('reasonInput').value.trim();
+      if (!confirm(`Đổi thanh toán đơn #${id} sang "${pLabel(to)}"?`)) return;
+      call(`/admin/orders/api/${id}/payment?to=${to}&note=${encodeURIComponent(note)}`);
+    }
+
+    function openDeleteModal() {
+      const id = document.getElementById('detailOrderId').value;
+      document.getElementById('deleteOrderIdText').textContent = id;
+      new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    function confirmDelete() {
+      const orderId = document.getElementById('detailOrderId').value;
+      fetch(`/admin/orders/api/${orderId}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(res => {
+          bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+          if (res.responseCode === 1) {
+            bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
+            showAlert("Xóa đơn hàng thành công!");
+            fetchOrders(currentPage);
+          } else {
+            showAlert("Xóa thất bại: " + res.responseMsg, "danger");
+          }
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchOrders(currentPage);
+      const open = new URLSearchParams(location.search).get('open');
+      if (open) openDetail(open);
+    });
+  </script>
+</div>
+</html>

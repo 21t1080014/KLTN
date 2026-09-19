@@ -26,20 +26,20 @@ export function showCart() {
 
 	if (cart.length === 0) {
 		container.innerHTML = `
-			<div class="text-center text-muted py-4">
-				<i class="bi bi-cart-x fs-1"></i>
-				<p class="mt-2">Giỏ hàng trống.</p>
+			<div class="text-center text-charcoal-muted py-10">
+				<i class="bi bi-bag fs-1"></i>
+				<p class="mt-3 text-sm">Giỏ hàng trống.</p>
 			</div>
 		`;
 		if (totalContainer) {
 			totalContainer.innerHTML = `
-				<span class="text-danger">Tổng tiền:</span><span>0 ₫</span>
+				<span>Tổng tiền:</span><span>0 ₫</span>
 			`;
 		}
 		return;
 	}
 
-	let html = "<div class='list-group'>";
+	let html = "<div class='divide-y divide-line'>";
 	let total = 0;
 
 	for (const item of cart) {
@@ -49,18 +49,18 @@ export function showCart() {
 		total += itemTotal;
 
 		html += `
-		  <div class="list-group-item d-flex align-items-start gap-3">
-		    <img src="${item.img}" alt="${item.name}" width="70" height="70" class="rounded border" style="object-fit: cover;" />
-		    <div class="flex-grow-1 overflow-hidden">
-		      <div class="fw-semibold" style="word-break: break-word;">
+		  <div class="flex items-start gap-3 py-4">
+		    <img src="${item.img}" alt="${item.name}" width="70" height="70" class="border border-line object-cover" />
+		    <div class="flex-1 overflow-hidden">
+		      <div class="text-sm text-charcoal" style="word-break: break-word;">
 		        ${item.name}
 		      </div>
-		      <div class="small text-muted mb-1">Giá: ${item.price}</div>
-		      <div class="d-flex align-items-center gap-2">
+		      <div class="text-xs text-charcoal-muted mb-2">Giá: ${item.price}</div>
+		      <div class="flex items-center gap-2">
 		        <input type="number" value="${itemQuantity}" min="1"
-		          class="form-control form-control-sm w-50"
+		          class="input-field w-16 text-center py-1.5"
 		          onchange="updateItemQuantity('${item.id}', this.value)" />
-		        <button class="btn btn-sm btn-outline-danger"
+		        <button class="text-xs text-sale hover:underline"
 		          onclick="removeItemFromCart('${item.id}')">
 		          Xóa
 		        </button>
@@ -76,7 +76,7 @@ export function showCart() {
 
 	if (totalContainer) {
 		totalContainer.innerHTML = `
-			<span class="text-danger">Tổng tiền:</span><span>${total.toLocaleString("vi-VN")} ₫</span>
+			<span>Tổng tiền:</span><span>${total.toLocaleString("vi-VN")} ₫</span>
 		`;
 	}
 }

@@ -147,12 +147,17 @@ function renderProducts(products) {
 			return `
 				<li class="list-group-item">
 					<div class="d-flex justify-content-between align-items-center">
+					<input type="checkbox" class="form-check-input chk-product me-2" value="${p.productId}">
 					<img src="${imageUrl}" alt="${p.name}" class="me-3 thumbnail" style="width:80px;height:80px;object-fit:contain;cursor:pointer;" onclick="openImageViewer('${p.productId}')">
 
-						<div><strong>${p.name}</strong><br><small class="product-description">${p.description || ''}</small></div>
+						<div class="flex-grow-1"><strong>${p.name}</strong>
+							<span class="badge ms-2">${p.status || ''}</span><br>
+							<small class="text-muted">SKU: ${p.sku} · Giá: ${Number(p.price).toLocaleString('vi-VN')}đ · Có thể bán: ${p.availableQuantity ?? 0} · ${p.variantCount || 1} biến thể${p.categoryName ? ' · ' + p.categoryName : ''}</small><br>
+							<small class="product-description">${p.description || ''}</small></div>
 						<div>
+							<button class="btn btn-sm btn-secondary me-2" title="Biến thể" onclick="openVariantsModal('${p.productId}')"><i class="bi bi-layers"></i></button>
 							<button class="btn btn-sm btn-warning me-2" onclick="openEditProductModal('${p.productId}')"><i class="bi bi-pencil"></i></button>
-							<button class="btn btn-sm btn-danger me-2" onclick="deleteProduct('${p.productId}')"><i class="bi bi-trash"></i></button>
+							${document.body.dataset.role === 'admin' ? `<button class="btn btn-sm btn-danger me-2" onclick="deleteProduct('${p.productId}')"><i class="bi bi-trash"></i></button>` : ''}
 							<button class="btn btn-sm btn-info" onclick="viewProductDetails('${p.productId}')"><i class="bi bi-eye"></i></button>
 						</div>
 					</div>
@@ -214,6 +219,8 @@ async function openEditProductModal(id) {
 				return $(this).text().trim() === p[`${field.replace('Id', 'Name')}`];
 			}).prop('selected', true);
 		});
+		$('#categoryId').val(p.categoryId || '');
+		$('#status').val(p.status || 'ACTIVE');
 		selectedFiles = (p.images || []).map(img => ({
 			isNew: false,
 			url: `${API_BASE}/img/${img.url}`,
@@ -366,6 +373,9 @@ async function loadFormOptions() {
 		populateSelect('#caseMaterialId', opts.caseMaterials, 'caseMaterialId', 'name');
 		populateSelect('#strapMaterialId', opts.strapMaterials, 'strapMaterialId', 'name');
 		populateSelect('#glassMaterialId', opts.glassMaterials, 'glassMaterialId', 'name');
+		populateSelect('#categoryId', opts.categories || [], 'categoryId', 'name');
+		populateEnumSelect('#status', opts.statuses || ['ACTIVE']);
+		$('#status').val('ACTIVE');
 
 		populateEnumSelect('#condition', opts.conditions);
 		populateEnumSelect('#gender', opts.genders);

@@ -21,12 +21,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.dungochung.shopdongho.common.FileStorageService;
 import com.dungochung.shopdongho.dto.ResponseDataDto;
 import com.dungochung.shopdongho.entity.BrandEntity;
+import com.dungochung.shopdongho.entity.CategoryEntity;
+import com.dungochung.shopdongho.repository.CategoryRepository;
 import com.dungochung.shopdongho.entity.CaseMaterialEntity;
 import com.dungochung.shopdongho.entity.GlassMaterialEntity;
 import com.dungochung.shopdongho.entity.StrapMaterialEntity;
 import com.dungochung.shopdongho.entity.WatchTypeEntity;
 import com.dungochung.shopdongho.enums.Gender;
 import com.dungochung.shopdongho.enums.ProductCondition;
+import com.dungochung.shopdongho.enums.ProductStatus;
 import com.dungochung.shopdongho.enums.Segment;
 import com.dungochung.shopdongho.repository.BrandReponsitory;
 import com.dungochung.shopdongho.repository.CaseMaterialReponsitory;
@@ -58,10 +61,13 @@ public class ProductController {
 	@Autowired
 	private GlassMaterialReponsitory glassMaterialRepository;
 
+	@Autowired
+	private CategoryRepository categoryRepository;
+
 	@GetMapping
 	public String showProduct(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/Product";
+		return "admin/products";
 	}
 
 	@GetMapping("/api")
@@ -78,17 +84,18 @@ public class ProductController {
 			@RequestParam Integer strapMaterialId, @RequestParam Integer glassMaterialId, @RequestParam String origin,
 			@RequestParam ProductCondition condition, @RequestParam String warrantyPeriod,
 			@RequestParam BigDecimal price, @RequestParam Gender gender, @RequestParam Segment segment,
-			@RequestParam String description, @RequestParam(required = false) List<MultipartFile> images) {
-		// Gọi service để lấy entity từ id (giả sử bạn đã có các phương thức findById)
-
+			@RequestParam String description, @RequestParam(required = false) Integer categoryId,
+			@RequestParam(required = false) ProductStatus status,
+			@RequestParam(required = false) List<MultipartFile> images) {
 		BrandEntity brand = brandRepository.findById(brandId).orElse(null);
 		WatchTypeEntity type = watchTypeRepository.findById(typeId).orElse(null);
 		CaseMaterialEntity caseMaterial = caseMaterialRepository.findById(caseMaterialId).orElse(null);
 		StrapMaterialEntity strapMaterial = strapMaterialRepository.findById(strapMaterialId).orElse(null);
 		GlassMaterialEntity glassMaterial = glassMaterialRepository.findById(glassMaterialId).orElse(null);
+		CategoryEntity category = categoryId != null ? categoryRepository.findById(categoryId).orElse(null) : null;
 
-		return productService.creatProduct(sku, name, brand, type, caseMaterial, strapMaterial, glassMaterial, origin,
-				condition, warrantyPeriod, price, gender, segment, description, images);
+		return productService.creatProduct(sku, name, brand, type, caseMaterial, strapMaterial, glassMaterial, category,
+				status, origin, condition, warrantyPeriod, price, gender, segment, description, images);
 	}
 
 	@PutMapping("/api/{productId}")
@@ -99,7 +106,9 @@ public class ProductController {
 			@RequestParam Integer glassMaterialId, @RequestParam String origin,
 			@RequestParam ProductCondition condition, @RequestParam String warrantyPeriod,
 			@RequestParam BigDecimal price, @RequestParam Gender gender, @RequestParam Segment segment,
-			@RequestParam String description, @RequestParam(required = false) List<MultipartFile> images,
+			@RequestParam String description, @RequestParam(required = false) Integer categoryId,
+			@RequestParam(required = false) ProductStatus status,
+			@RequestParam(required = false) List<MultipartFile> images,
 			@RequestParam(required = false) List<String> oldImages) {
 
 		BrandEntity brand = brandRepository.findById(brandId).orElse(null);
@@ -107,10 +116,11 @@ public class ProductController {
 		CaseMaterialEntity caseMaterial = caseMaterialRepository.findById(caseMaterialId).orElse(null);
 		StrapMaterialEntity strapMaterial = strapMaterialRepository.findById(strapMaterialId).orElse(null);
 		GlassMaterialEntity glassMaterial = glassMaterialRepository.findById(glassMaterialId).orElse(null);
+		CategoryEntity category = categoryId != null ? categoryRepository.findById(categoryId).orElse(null) : null;
 
 		return productService.updateProduct(productId, sku, name, brand, type, caseMaterial, strapMaterial,
-				glassMaterial, origin, condition, warrantyPeriod, price, gender, segment, description, images,
-				oldImages);
+				glassMaterial, category, status, origin, condition, warrantyPeriod, price, gender, segment, description,
+				images, oldImages);
 	}
 
 	@DeleteMapping("/api/{productId}")

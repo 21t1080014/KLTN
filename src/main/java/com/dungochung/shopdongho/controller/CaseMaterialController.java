@@ -25,7 +25,7 @@ public class CaseMaterialController {
 	@GetMapping
 	public String showCaseMaterial(Model model, HttpServletRequest request) {
 		model.addAttribute("currentPath", request.getRequestURI());
-		return "pages/categories/CaseMaterial";
+		return "admin/categories/case-material";
 	}
 
 	@GetMapping("/api")
