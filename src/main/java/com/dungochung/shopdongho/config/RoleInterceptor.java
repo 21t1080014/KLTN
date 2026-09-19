@@ -58,7 +58,8 @@ public class RoleInterceptor implements HandlerInterceptor {
 	private boolean deny(HttpServletRequest request, HttpServletResponse response, int status, String redirectTo)
 			throws IOException {
 		String uri = request.getRequestURI();
-		boolean api = uri.contains("/api/") || uri.endsWith("/api") || !"GET".equalsIgnoreCase(request.getMethod());
+		boolean api = uri.contains("/api/") || uri.endsWith("/api") || uri.contains("/export/")
+				|| !"GET".equalsIgnoreCase(request.getMethod());
 		if (api) {
 			response.setStatus(status);
 			response.setContentType("application/json;charset=UTF-8");

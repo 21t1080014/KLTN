@@ -1,0 +1,121 @@
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
+<div th:fragment="content">
+	<h1 class="font-heading text-2xl text-charcoal mb-2">Báo cáo kinh doanh</h1>
+	<p class="text-sm text-charcoal-muted mb-6">
+		Doanh thu = đơn <strong>đã giao/hoàn thành và đã thanh toán</strong>, tính theo ngày đặt hàng (đơn hủy, đang giao hoặc đang chờ hoàn tiền không tính).
+		Tuần bắt đầu từ thứ Hai; kỳ đầu/cuối có thể là tuần/tháng chưa đủ.
+	</p>
+
+	<div id="alertBox" class="alert hidden" role="alert"></div>
+
+	<form class="mb-6 flex flex-wrap items-end gap-3" onsubmit="loadAll(); return false;">
+		<div>
+			<label class="form-label text-sm" for="gran">Nhóm theo</label>
+			<select id="gran" class="form-select w-auto" onchange="resetDates(); loadAll()">
+				<option value="day">Ngày</option>
+				<option value="week">Tuần</option>
+				<option value="month">Tháng</option>
+			</select>
+		</div>
+		<div>
+			<label class="form-label text-sm" for="from">Từ ngày</label>
+			<input type="date" id="from" class="form-control">
+		</div>
+		<div>
+			<label class="form-label text-sm" for="to">Đến ngày</label>
+			<input type="date" id="to" class="form-control">
+		</div>
+		<button class="btn btn-primary">Xem báo cáo</button>
+		<a id="exportLink" class="btn btn-outline-secondary" href="#">Xuất đơn hàng (CSV)</a>
+	</form>
+
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+		<div class="border border-line bg-white p-6 text-center">
+			<h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Doanh thu kỳ</h5>
+			<p id="kRevenue" class="font-heading text-2xl text-gold-dark">--</p>
+		</div>
+		<div class="border border-line bg-white p-6 text-center">
+			<h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Số đơn</h5>
+			<p id="kOrders" class="font-heading text-2xl text-charcoal">--</p>
+		</div>
+		<div class="border border-line bg-white p-6 text-center">
+			<h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Giá trị TB / đơn</h5>
+			<p id="kAvg" class="font-heading text-2xl text-charcoal">--</p>
+		</div>
+	</div>
+
+	<div class="border border-line bg-white mb-6">
+		<div class="border-b border-line px-6 py-4 text-sm tracking-wide2 uppercase text-charcoal">Doanh thu theo kỳ</div>
+		<div class="p-6">
+			<div id="bars" class="flex items-end gap-1 h-48 overflow-x-auto"></div>
+			<table class="table table-bordered mt-6">
+				<thead><tr><th>Kỳ</th><th>Số đơn</th><th>Doanh thu</th></tr></thead>
+				<tbody id="seriesBody"></tbody>
+			</table>
+		</div>
+	</div>
+
+	<div class="border border-line bg-white">
+		<div class="border-b border-line px-6 py-4 text-sm tracking-wide2 uppercase text-charcoal">Sản phẩm bán chạy trong kỳ</div>
+		<div class="p-6">
+			<table class="table table-bordered">
+				<thead><tr><th>#</th><th>SKU</th><th>Sản phẩm</th><th>Số lượng</th><th>Doanh thu</th></tr></thead>
+				<tbody id="topBody"></tbody>
+			</table>
+		</div>
+	</div>
+
+	<script>
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const vnd = v => Number(v || 0).toLocaleString('vi-VN') + '₫';
+    const iso = d => d.toISOString().slice(0, 10);
+
+    function showAlert(msg) {
+      const b = document.getElementById('alertBox');
+      b.className = 'alert alert-danger'; b.textContent = msg; b.classList.remove('hidden');
+      setTimeout(() => b.classList.add('hidden'), 5000);
+    }
+
+    // Để trống = server dùng mặc định theo kiểu nhóm (30 ngày / 12 tuần / 12 tháng)
+    function resetDates() { document.getElementById('from').value = ''; document.getElementById('to').value = ''; }
+
+    function params(extra) {
+      const q = new URLSearchParams(extra || {});
+      const f = document.getElementById('from').value, t = document.getElementById('to').value;
+      if (f) q.set('from', f);
+      if (t) q.set('to', t);
+      return q;
+    }
+
+    function loadAll() {
+      const gran = document.getElementById('gran').value;
+      fetch('/admin/reports/api/revenue?' + params({ granularity: gran })).then(r => r.json()).then(res => {
+        if (res.responseCode !== 1) { showAlert(res.responseMsg); return; }
+        const d = res.data;
+        document.getElementById('from').value = d.from;
+        document.getElementById('to').value = d.to;
+        document.getElementById('kRevenue').textContent = vnd(d.totalRevenue);
+        document.getElementById('kOrders').textContent = d.totalOrders;
+        document.getElementById('kAvg').textContent = vnd(d.avgOrderValue);
+        const max = Math.max(1, ...d.points.map(p => Number(p.revenue)));
+        document.getElementById('bars').innerHTML = d.points.map(p => {
+          const h = Math.max(2, Math.round(Number(p.revenue) / max * 100));
+          return `<div class="flex-1 min-w-[18px] flex flex-col items-center justify-end h-full" title="${esc(p.label)}: ${vnd(p.revenue)} (${p.orders} đơn)">
+            <div class="w-full bg-gold" style="height:${h}%"></div>
+            <div class="text-[10px] text-charcoal-muted mt-1 whitespace-nowrap">${esc(p.label)}</div></div>`;
+        }).join('');
+        document.getElementById('seriesBody').innerHTML = d.points.slice().reverse().map(p =>
+          `<tr><td>${esc(p.label)}</td><td>${p.orders}</td><td>${vnd(p.revenue)}</td></tr>`).join('');
+        document.getElementById('exportLink').href = '/admin/reports/export/orders.csv?' + params();
+      });
+      fetch('/admin/reports/api/top-products?' + params({ limit: 10 })).then(r => r.json()).then(res => {
+        if (res.responseCode !== 1) return;
+        document.getElementById('topBody').innerHTML = res.data.products.map(p =>
+          `<tr><td>${p.rank}</td><td>${esc(p.sku)}</td><td>${esc(p.name)}</td><td>${p.quantity}</td><td>${vnd(p.revenue)}</td></tr>`).join('')
+          || '<tr><td colspan="5" class="text-center text-charcoal-muted">Chưa có dữ liệu bán hàng trong kỳ.</td></tr>';
+      });
+    }
+    document.addEventListener('DOMContentLoaded', loadAll);
+  </script>
+</div>
+</html>

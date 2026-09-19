@@ -20,6 +20,8 @@ import com.dungochung.shopdongho.enums.Segment;
 
 @Repository
 public interface ProductRepository extends JpaRepository<ProductEntity, String> {
+	long countByStatus(com.dungochung.shopdongho.enums.ProductStatus status);
+
 	boolean existsByName(String name);
 
 	boolean existsByNameAndProductIdNot(String name, String productId);

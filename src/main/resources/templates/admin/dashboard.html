@@ -1,59 +1,123 @@
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/admin :: adminLayout}">
 <div th:fragment="content">
-	<h2 class="font-heading text-2xl text-charcoal mb-8">Dashboard</h2>
+	<h2 class="font-heading text-2xl text-charcoal mb-2">Dashboard</h2>
+	<p class="text-sm text-charcoal-muted mb-8">Hiển thị theo vai trò của bạn. Doanh thu = đơn đã giao/hoàn thành và đã thanh toán, tính theo ngày đặt hàng.</p>
 
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-		<div class="border border-line bg-white p-6 text-center">
-			<h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Tổng đơn hàng</h5>
-			<p id="totalOrders" class="font-heading text-2xl text-charcoal">--</p>
-		</div>
-		<div class="border border-line bg-white p-6 text-center">
-			<h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Doanh thu</h5>
-			<p id="totalRevenue" class="font-heading text-2xl text-gold-dark">--</p>
-		</div>
-		<div class="border border-line bg-white p-6 text-center">
-			<h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Tồn kho</h5>
-			<p id="totalInventory" class="font-heading text-2xl text-charcoal">--</p>
-		</div>
+	<!-- Việc cần làm -->
+	<div id="queueSection" class="hidden mb-8">
+		<div class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">Việc cần làm</div>
+		<div id="queueCards" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
 	</div>
 
-	<div class="border border-line bg-white">
-		<div class="border-b border-line px-6 py-4 text-sm tracking-wide2 uppercase text-charcoal">Trạng thái đơn
-			hàng</div>
+	<!-- KPI -->
+	<div id="kpiCards" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
+
+	<!-- Doanh thu 14 ngày -->
+	<div id="revenueSection" class="hidden border border-line bg-white mb-8">
+		<div class="border-b border-line px-6 py-4 flex justify-between items-center">
+			<span class="text-sm tracking-wide2 uppercase text-charcoal">Doanh thu 14 ngày gần nhất</span>
+			<a href="/admin/reports" class="text-sm underline text-charcoal-soft">Xem báo cáo chi tiết</a>
+		</div>
 		<div class="p-6">
-			<ul id="orderStatusList" class="divide-y divide-line"></ul>
+			<div id="revenueBars" class="flex items-end gap-1 h-40"></div>
 		</div>
 	</div>
 
-	<!-- Nhúng Axios -->
-	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+		<div id="statusSection" class="hidden border border-line bg-white">
+			<div class="border-b border-line px-6 py-4 text-sm tracking-wide2 uppercase text-charcoal">Trạng thái đơn hàng</div>
+			<div class="p-6"><ul id="orderStatusList" class="divide-y divide-line"></ul></div>
+		</div>
+		<div id="topSection" class="hidden border border-line bg-white">
+			<div class="border-b border-line px-6 py-4 text-sm tracking-wide2 uppercase text-charcoal">Bán chạy 30 ngày qua</div>
+			<div class="p-6"><ol id="topList" class="divide-y divide-line text-sm text-charcoal-soft"></ol></div>
+		</div>
+	</div>
 
-	<!-- Gọi API và cập nhật dữ liệu -->
+	<div id="lowStockSection" class="hidden border border-line bg-white">
+		<div class="border-b border-line px-6 py-4 flex justify-between items-center">
+			<span class="text-sm tracking-wide2 uppercase text-charcoal">Cảnh báo tồn thấp</span>
+			<a href="/admin/inventory" class="text-sm underline text-charcoal-soft">Mở tồn kho</a>
+		</div>
+		<div class="p-6">
+			<table class="table table-bordered">
+				<thead><tr><th>SKU</th><th>Sản phẩm</th><th>Tồn thực</th><th>Đang giữ</th><th>Bán được</th><th>Ngưỡng</th></tr></thead>
+				<tbody id="lowStockBody"></tbody>
+			</table>
+		</div>
+	</div>
+
 	<script>
-    document.addEventListener("DOMContentLoaded", function () {
-      axios.get("/admin/dashboard/api")
-        .then(function (response) {
-          const data = response.data.data;
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const vnd = v => Number(v || 0).toLocaleString('vi-VN') + '₫';
+    const card = (title, value, cls) => `<div class="border border-line bg-white p-6 text-center">
+        <h5 class="text-xs tracking-wide2 uppercase text-charcoal-muted mb-2">${esc(title)}</h5>
+        <p class="font-heading text-2xl ${cls || 'text-charcoal'}">${value}</p></div>`;
 
-          document.getElementById("totalOrders").textContent = data.totalOrders;
-          document.getElementById("totalRevenue").textContent = data.totalRevenue.toLocaleString("vi-VN") + " VND";
-          document.getElementById("totalInventory").textContent = data.totalInventory;
-
-          const list = document.getElementById("orderStatusList");
-          list.innerHTML = "";
-          for (const status in data.orderStatusCount) {
-            const li = document.createElement("li");
-            li.className = "flex justify-between items-center py-3 text-sm text-charcoal-soft";
-            li.innerHTML = `
-              <span class="capitalize">${status}</span>
-              <span class="inline-flex items-center justify-center min-w-[2rem] h-7 px-2 bg-charcoal text-white text-xs rounded-full">${data.orderStatusCount[status]}</span>
-            `;
-            list.appendChild(li);
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('/admin/dashboard/api').then(r => r.json()).then(res => {
+        if (res.responseCode !== 1) return;
+        const d = res.data;
+        const kpi = [];
+        if (d.orders) {
+          kpi.push(card('Đơn hôm nay', d.orders.today), card('Đơn tháng này', d.orders.thisMonth), card('Tổng đơn hàng', d.orders.total));
+        }
+        if (d.revenue) {
+          kpi.push(card('Doanh thu hôm nay', vnd(d.revenue.today), 'text-gold-dark'),
+                   card('Doanh thu tháng này', vnd(d.revenue.thisMonth), 'text-gold-dark'),
+                   card('Doanh thu tổng', vnd(d.revenue.allTime), 'text-gold-dark'));
+          if (d.revenue.refundPendingCount > 0) {
+            kpi.push(card('Chờ hoàn tiền', `${d.revenue.refundPendingCount} đơn · ${vnd(d.revenue.refundPendingAmount)}`, 'text-red-700'));
           }
-        })
-        .catch(function (error) {
-          console.error("Lỗi khi gọi API:", error);
-        });
+        }
+        if (d.inventory) {
+          kpi.push(card('Tồn kho (thực)', d.inventory.totalQuantity), card('Sắp hết hàng', d.inventory.lowStockCount, d.inventory.lowStockCount > 0 ? 'text-red-700' : ''),
+                   card('Hết hàng', d.inventory.outOfStockCount, d.inventory.outOfStockCount > 0 ? 'text-red-700' : ''));
+        }
+        document.getElementById('kpiCards').innerHTML = kpi.join('');
+
+        const q = d.queue || {};
+        const qLabels = { pendingConfirm: 'Đơn chờ xác nhận', refundPending: 'Đơn chờ hoàn tiền', toPack: 'Đơn chờ đóng gói', toShip: 'Đơn chờ giao', draftProducts: 'Sản phẩm nháp' };
+        const qLinks = { pendingConfirm: '/admin/orders', refundPending: '/admin/orders', toPack: '/admin/orders', toShip: '/admin/orders', draftProducts: '/admin/products' };
+        const qHtml = Object.keys(q).map(k => `<a href="${qLinks[k]}" class="block border border-line bg-white p-4 hover:border-charcoal">
+            <div class="text-xs text-charcoal-muted">${esc(qLabels[k] || k)}</div><div class="font-heading text-xl text-charcoal">${q[k]}</div></a>`).join('');
+        if (qHtml) { document.getElementById('queueCards').innerHTML = qHtml; document.getElementById('queueSection').classList.remove('hidden'); }
+
+        if (d.revenueLast14Days) {
+          const pts = d.revenueLast14Days, max = Math.max(1, ...pts.map(p => Number(p.revenue)));
+          document.getElementById('revenueBars').innerHTML = pts.map(p => {
+            const h = Math.max(2, Math.round(Number(p.revenue) / max * 100));
+            return `<div class="flex-1 flex flex-col items-center justify-end h-full" title="${esc(p.label)}: ${vnd(p.revenue)} (${p.orders} đơn)">
+              <div class="w-full bg-gold" style="height:${h}%"></div><div class="text-[10px] text-charcoal-muted mt-1">${esc(p.label)}</div></div>`;
+          }).join('');
+          document.getElementById('revenueSection').classList.remove('hidden');
+        }
+
+        if (d.orderStatusCount) {
+          const labels = d.statusLabels || {};
+          document.getElementById('orderStatusList').innerHTML = Object.keys(d.orderStatusCount).map(s => `
+            <li class="flex justify-between items-center py-3 text-sm text-charcoal-soft"><span>${esc(labels[s] || s)}</span>
+            <span class="inline-flex items-center justify-center min-w-[2rem] h-7 px-2 bg-charcoal text-white text-xs rounded-full">${d.orderStatusCount[s]}</span></li>`).join('')
+            || '<li class="py-3 text-sm text-charcoal-muted">Chưa có đơn hàng.</li>';
+          document.getElementById('statusSection').classList.remove('hidden');
+        }
+
+        if (d.topProducts) {
+          document.getElementById('topList').innerHTML = d.topProducts.map(p => `
+            <li class="flex justify-between py-2"><span>${p.rank}. ${esc(p.name)} <span class="text-xs text-charcoal-muted">${esc(p.sku)}</span></span>
+            <span>${p.quantity} cái${d.revenue ? ' · ' + vnd(p.revenue) : ''}</span></li>`).join('')
+            || '<li class="py-2 text-charcoal-muted">Chưa có dữ liệu bán hàng trong kỳ.</li>';
+          document.getElementById('topSection').classList.remove('hidden');
+        }
+
+        if (d.inventory) {
+          document.getElementById('lowStockBody').innerHTML = d.inventory.lowStockItems.map(i => `
+            <tr><td>${esc(i.sku)}</td><td>${esc(i.productName)}${i.variantName ? ' – ' + esc(i.variantName) : ''}</td>
+            <td>${i.quantity}</td><td>${i.reserved}</td><td>${i.available}</td><td>${i.threshold}</td></tr>`).join('')
+            || '<tr><td colspan="6" class="text-center text-charcoal-muted">Không có mặt hàng nào dưới ngưỡng.</td></tr>';
+          document.getElementById('lowStockSection').classList.remove('hidden');
+        }
+      }).catch(e => console.error('Lỗi tải dashboard', e));
     });
   </script>
 </div>
