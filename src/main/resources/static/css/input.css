@@ -236,6 +236,9 @@
 
   /* --- Collapse (navbar toggler mobile) --- */
   .collapse:not(.show) { display: none; }
+  /* Tailwind có sẵn utility `.collapse { visibility: collapse }` trùng tên với Bootstrap => phần tử đã mở (.show) vẫn bị ẩn nội dung
+     nhưng còn chiếm chỗ (menu Sản phẩm/Thuộc tính admin trống). Ép hiển thị lại khi đang mở/đang chuyển. */
+  .collapse.show, .collapsing { visibility: visible; }
   .collapsing {
     @apply relative h-0 overflow-hidden;
     transition: height .35s ease;

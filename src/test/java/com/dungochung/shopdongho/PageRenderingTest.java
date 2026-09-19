@@ -64,4 +64,12 @@ class PageRenderingTest {
 		org.junit.jupiter.api.Assertions.assertTrue(html.contains("/admin/products") && html.contains("/admin/brands")
 				&& html.contains("/admin/categories/watch-types"));
 	}
+
+	/** Regression: utility `.collapse` của Tailwind (visibility:collapse) trùng tên với Bootstrap collapse; phải có luật ép hiện khi .show. */
+	@Test
+	void compiledCssRestoresVisibilityForOpenCollapse() throws Exception {
+		String css = java.nio.file.Files.readString(java.nio.file.Path.of("src/main/resources/static/css/output.css"));
+		org.junit.jupiter.api.Assertions.assertTrue(css.contains(".collapse.show,.collapsing{visibility:visible}"),
+				"output.css thiếu luật hiển thị .collapse.show - chạy npm run css:build");
+	}
 }
