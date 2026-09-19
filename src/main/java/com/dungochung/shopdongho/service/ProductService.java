@@ -14,6 +14,7 @@ import com.dungochung.shopdongho.entity.StrapMaterialEntity;
 import com.dungochung.shopdongho.entity.WatchTypeEntity;
 import com.dungochung.shopdongho.enums.Gender;
 import com.dungochung.shopdongho.enums.ProductCondition;
+import com.dungochung.shopdongho.enums.ProductStatus;
 import com.dungochung.shopdongho.enums.Segment;
 
 public interface ProductService {
@@ -21,12 +22,12 @@ public interface ProductService {
 
 	ResponseDataDto creatProduct(String sku, String name, BrandEntity brand, WatchTypeEntity type,
 			CaseMaterialEntity caseMaterial, StrapMaterialEntity strapMaterial, GlassMaterialEntity glassMaterial,
-			CategoryEntity category, String origin, ProductCondition condition, String warrantyPeriod, BigDecimal price, Gender gender,
+			CategoryEntity category, ProductStatus status, String origin, ProductCondition condition, String warrantyPeriod, BigDecimal price, Gender gender,
 			Segment segment, String description, List<MultipartFile> images);
 
 	ResponseDataDto updateProduct(String productId, String sku, String name, BrandEntity brand, WatchTypeEntity type,
 			CaseMaterialEntity caseMaterial, StrapMaterialEntity strapMaterial, GlassMaterialEntity glassMaterial,
-			CategoryEntity category, String origin, ProductCondition condition, String warrantyPeriod, BigDecimal price, Gender gender,
+			CategoryEntity category, ProductStatus status, String origin, ProductCondition condition, String warrantyPeriod, BigDecimal price, Gender gender,
 			Segment segment, String description, List<MultipartFile> images, List<String> oldImageNames);
 
 	ResponseDataDto deleteProduct(String productId);

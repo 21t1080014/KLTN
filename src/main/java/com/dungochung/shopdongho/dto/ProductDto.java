@@ -41,6 +41,33 @@ public class ProductDto {
 
 	private Integer categoryId;
 	private String categoryName;
+	private String status;
+	private int availableQuantity;
+	private long variantCount;
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public int getAvailableQuantity() {
+		return availableQuantity;
+	}
+
+	public void setAvailableQuantity(int availableQuantity) {
+		this.availableQuantity = availableQuantity;
+	}
+
+	public long getVariantCount() {
+		return variantCount;
+	}
+
+	public void setVariantCount(long variantCount) {
+		this.variantCount = variantCount;
+	}
 
 	public Integer getCategoryId() {
 		return categoryId;

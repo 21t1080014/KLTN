@@ -18,12 +18,12 @@ $(document).ready(function() {
 	});
 	$('#editInventoryForm').on('submit', async function(e) {
 		e.preventDefault();
-		const productId = $('#editProductId').val();
+		const variantId = $('#editProductId').val(); // ô ẩn này giờ chứa variantId
 		const quantity = $('#editQuantity').val();
+		const params = new URLSearchParams({ quantity, note: $('#editNote').val(), lowStockThreshold: $('#editThreshold').val() });
 
 		try {
-			// Gửi PUT với query param ?quantity=
-			const res = await fetch(`${API_BASE}/${productId}?quantity=${encodeURIComponent(quantity)}`, {
+			const res = await fetch(`${API_BASE}/variant/${variantId}?${params}`, {
 				method: 'PUT'
 			});
 			const json = await res.json();
@@ -80,12 +80,15 @@ function renderInventoryList(list) {
 		const html = `
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <div>
-          <strong>${inventory.productName}</strong><br />
-          <small>Số lượng: ${inventory.quantity}</small>
+          <strong>${inventory.productName}</strong>
+          ${inventory.variantName ? `<span class="text-muted"> — ${inventory.variantName} (${inventory.sku})</span>` : ''}
+          ${inventory.lowStock ? '<span class="badge bg-danger ms-2">Tồn thấp</span>' : ''}<br />
+          <small>Tồn thực: ${inventory.quantity} · Đang giữ: ${inventory.reservedQuantity} · Có thể bán: ${inventory.availableQuantity} · Ngưỡng cảnh báo: ${inventory.lowStockThreshold}</small>
         </div>
         <div>
-          <button class="btn btn-sm btn-warning me-2" onclick="openEditModal('${inventory.productId}')">Sửa</button>
-          <button class="btn btn-sm btn-danger" onclick="confirmDelete('${inventory.productId}')">Xóa</button>
+          <button class="btn btn-sm btn-warning me-2" onclick="openEditModal('${inventory.variantId}')">Sửa</button>
+          <button class="btn btn-sm btn-secondary me-2" onclick="openHistory('${inventory.variantId}')">Lịch sử</button>
+          <button class="btn btn-sm btn-danger" onclick="confirmDelete('${inventory.variantId}')">Xóa</button>
         </div>
       </li>
     `;
@@ -163,18 +166,20 @@ function renderPagination(pagination) {
   `);
 }
 // Mở modal Edit và load dữ liệu từng item
-async function openEditModal(productId) {
+async function openEditModal(variantId) {
 	try {
-		const res = await fetch(`${API_BASE}/product/${productId}`);
+		const res = await fetch(`${API_BASE}/variant/${variantId}`);
 		const json = await res.json();
 		if (json.responseCode !== 1) {
 			showErrorToast(json.responseMsg || 'Không tải được thông tin');
 			return;
 		}
 		const item = json.data;
-		$('#editProductId').val(item.productId);
-		$('#editProductName').val(item.productName);
+		$('#editProductId').val(item.variantId);
+		$('#editProductName').val(item.productName + (item.variantName ? ' — ' + item.variantName + ' (' + item.sku + ')' : ''));
 		$('#editQuantity').val(item.quantity);
+		$('#editThreshold').val(item.lowStockThreshold);
+		$('#editNote').val('');
 		new bootstrap.Modal(document.getElementById('editInventoryModal')).show();
 	} catch (e) {
 		console.error(e);
@@ -183,8 +188,8 @@ async function openEditModal(productId) {
 }
 async function checkLowStock() {
 	try {
-		const threshold = 5; // hoặc lấy dynamic nếu bạn có input
-		const res = await fetch(`${API_BASE}/low-stock?threshold=${threshold}`);
+		// không truyền threshold: server dùng ngưỡng cảnh báo riêng của từng biến thể
+		const res = await fetch(`${API_BASE}/low-stock`);
 		const json = await res.json();
 		if (json.responseCode !== 1) {
 			showErrorToast(json.responseMsg || 'Không lấy được dữ liệu tồn kho thấp');
@@ -201,8 +206,8 @@ async function checkLowStock() {
 		list.forEach(item => {
 			$lowList.append(`
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <span>${item.productName}</span>
-          <span class="badge bg-danger rounded-pill">${item.quantity}</span>
+          <span>${item.productName}${item.variantName ? ' — ' + item.variantName + ' (' + item.sku + ')' : ''}</span>
+          <span class="badge bg-danger rounded-pill">${item.availableQuantity} / ngưỡng ${item.lowStockThreshold}</span>
         </li>
       `);
 		});
@@ -213,9 +218,9 @@ async function checkLowStock() {
 	}
 }
 // Mở modal xác nhận xóa
-function confirmDelete(productId) {
-	// gắn productId lên nút confirm
-	$('#confirmDeleteBtn').data('product-id', productId);
+function confirmDelete(variantId) {
+	// gắn variantId lên nút confirm
+	$('#confirmDeleteBtn').data('product-id', variantId);
 	new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
 }
 
@@ -223,7 +228,7 @@ function confirmDelete(productId) {
 $('#confirmDeleteBtn').on('click', async function() {
 	const productId = $(this).data('product-id');
 	try {
-		const res = await fetch(`${API_BASE}/${productId}`, { method: 'DELETE' });
+		const res = await fetch(`${API_BASE}/variant/${productId}`, { method: 'DELETE' });
 		const json = await res.json();
 		if (json.responseCode === 1) {
 			bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal')).hide();
@@ -242,4 +247,26 @@ function showErrorToast(msg) {
 	$toast.find('.toast-body').text(msg);
 	const toast = new bootstrap.Toast($toast[0]);
 	toast.show();
+}
+// ---- Lịch sử biến động tồn kho của 1 biến thể ----
+async function openHistory(variantId, page = 0) {
+	try {
+		const res = await fetch(`${API_BASE}/movements?variantId=${variantId}&page=${page}&size=10`);
+		const json = await res.json();
+		if (json.responseCode !== 1) return showErrorToast(json.responseMsg || 'Không tải được lịch sử');
+		const rows = json.data.movements.map(m => `
+			<tr>
+				<td>${m.createdAt || ''}</td><td>${m.type}</td>
+				<td class="${m.change < 0 ? 'text-danger' : 'text-success'}">${m.change > 0 ? '+' : ''}${m.change}</td>
+				<td>${m.before} → ${m.after}</td><td>${m.reference || ''}</td><td>${m.note || ''}</td><td>${m.createdBy || ''}</td>
+			</tr>`).join('');
+		$('#historyBody').html(rows || '<tr><td colspan="7" class="text-muted text-center">Chưa có biến động</td></tr>');
+		const pg = json.data.pagination;
+		$('#historyPager').html(pg.totalPages > 1 ? Array.from({ length: pg.totalPages }, (_, i) =>
+			`<button class="btn btn-sm ${i === pg.currentPage ? 'btn-primary' : 'btn-outline-secondary'} me-1" onclick="openHistory('${variantId}', ${i})">${i + 1}</button>`).join('') : '');
+		bootstrap.Modal.getOrCreateInstance(document.getElementById('historyModal')).show();
+	} catch (e) {
+		console.error(e);
+		showErrorToast('Lỗi khi tải lịch sử');
+	}
 }

@@ -101,12 +101,38 @@
 							<label for="editQuantity" class="form-label">Số lượng tồn</label>
 							<input type="number" class="form-control" id="editQuantity" name="quantity" required min="0">
 						</div>
+						<div class="mb-3">
+							<label for="editThreshold" class="form-label">Ngưỡng cảnh báo tồn thấp</label>
+							<input type="number" class="form-control" id="editThreshold" min="0">
+						</div>
+						<div class="mb-3">
+							<label for="editNote" class="form-label">Ghi chú (lý do điều chỉnh, ghi vào lịch sử kho)</label>
+							<input type="text" class="form-control" id="editNote" maxlength="255">
+						</div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
 						<button type="submit" class="btn btn-primary">Lưu thay đổi</button>
 					</div>
 				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Modal lịch sử biến động tồn kho -->
+	<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Lịch sử biến động tồn kho</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-bordered">
+						<thead><tr><th>Thời điểm</th><th>Loại</th><th>Thay đổi</th><th>Trước → Sau</th><th>Tham chiếu</th><th>Ghi chú</th><th>Người thực hiện</th></tr></thead>
+						<tbody id="historyBody"></tbody>
+					</table>
+					<div id="historyPager"></div>
+				</div>
 			</div>
 		</div>
 	</div>

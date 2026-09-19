@@ -23,4 +23,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Inte
 
 	List<OrderItemEntity> findByOrder(OrderEntity order);
 
+	boolean existsByProduct_ProductId(String productId);
+
 }

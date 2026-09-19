@@ -48,6 +48,7 @@ public class LoginAdminController {
 				session = request.getSession();
 				session.setAttribute("userLogin", user);
 				session.setAttribute("roleName", roleName);
+				session.setAttribute("username", user.getUsername());
 				return "redirect:/admin/dashboard";
 			} else {
 				model.addAttribute("error", "Bạn không có quyền truy cập trang quản trị.");

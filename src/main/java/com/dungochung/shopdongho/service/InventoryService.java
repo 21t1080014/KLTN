@@ -16,11 +16,21 @@ public interface InventoryService {
 	ResponseDataDto getInventoryByProductId(String productId);
 
 	// Cảnh báo tồn kho thấp hơn mức tối thiểu (nếu có logic min_quantity)
-	ResponseDataDto getLowStockInventories(int threshold);
+	ResponseDataDto getLowStockInventories(Integer threshold);
 
 	// Lịch sử thay đổi tồn kho (nếu bạn log lại lịch sử vào bảng riêng)
 	ResponseDataDto getInventoryChangeHistory(String productId, int page, int size);
 
-	// Xóa dữ liệu tồn kho (nên hạn chế dùng trừ khi gỡ bỏ sản phẩm)
+	// Xóa dòng tồn kho của biến thể mặc định (chỉ khi tồn = 0 và không giữ hàng)
 	ResponseDataDto deleteInventory(String productId);
+
+	// ---- Theo biến thể ----
+	ResponseDataDto getVariantInventory(Long variantId);
+
+	// Kiểm kê: đặt lại tồn thực của biến thể (ghi lịch sử), tùy chọn cập nhật ngưỡng cảnh báo
+	ResponseDataDto updateVariantStock(Long variantId, int quantity, String note, Integer lowStockThreshold);
+
+	ResponseDataDto deleteVariantInventory(Long variantId);
+
+	ResponseDataDto getMovements(Long variantId, String productId, int page, int size);
 }

@@ -29,6 +29,7 @@ import com.dungochung.shopdongho.entity.StrapMaterialEntity;
 import com.dungochung.shopdongho.entity.WatchTypeEntity;
 import com.dungochung.shopdongho.enums.Gender;
 import com.dungochung.shopdongho.enums.ProductCondition;
+import com.dungochung.shopdongho.enums.ProductStatus;
 import com.dungochung.shopdongho.enums.Segment;
 import com.dungochung.shopdongho.repository.BrandReponsitory;
 import com.dungochung.shopdongho.repository.CaseMaterialReponsitory;
@@ -84,6 +85,7 @@ public class ProductController {
 			@RequestParam ProductCondition condition, @RequestParam String warrantyPeriod,
 			@RequestParam BigDecimal price, @RequestParam Gender gender, @RequestParam Segment segment,
 			@RequestParam String description, @RequestParam(required = false) Integer categoryId,
+			@RequestParam(required = false) ProductStatus status,
 			@RequestParam(required = false) List<MultipartFile> images) {
 		BrandEntity brand = brandRepository.findById(brandId).orElse(null);
 		WatchTypeEntity type = watchTypeRepository.findById(typeId).orElse(null);
@@ -93,7 +95,7 @@ public class ProductController {
 		CategoryEntity category = categoryId != null ? categoryRepository.findById(categoryId).orElse(null) : null;
 
 		return productService.creatProduct(sku, name, brand, type, caseMaterial, strapMaterial, glassMaterial, category,
-				origin, condition, warrantyPeriod, price, gender, segment, description, images);
+				status, origin, condition, warrantyPeriod, price, gender, segment, description, images);
 	}
 
 	@PutMapping("/api/{productId}")
@@ -105,6 +107,7 @@ public class ProductController {
 			@RequestParam ProductCondition condition, @RequestParam String warrantyPeriod,
 			@RequestParam BigDecimal price, @RequestParam Gender gender, @RequestParam Segment segment,
 			@RequestParam String description, @RequestParam(required = false) Integer categoryId,
+			@RequestParam(required = false) ProductStatus status,
 			@RequestParam(required = false) List<MultipartFile> images,
 			@RequestParam(required = false) List<String> oldImages) {
 
@@ -116,7 +119,7 @@ public class ProductController {
 		CategoryEntity category = categoryId != null ? categoryRepository.findById(categoryId).orElse(null) : null;
 
 		return productService.updateProduct(productId, sku, name, brand, type, caseMaterial, strapMaterial,
-				glassMaterial, category, origin, condition, warrantyPeriod, price, gender, segment, description,
+				glassMaterial, category, status, origin, condition, warrantyPeriod, price, gender, segment, description,
 				images, oldImages);
 	}
 

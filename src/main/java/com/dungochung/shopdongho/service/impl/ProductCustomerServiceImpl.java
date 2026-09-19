@@ -28,6 +28,7 @@ import com.dungochung.shopdongho.entity.ProductEntity;
 import com.dungochung.shopdongho.entity.PromotionEntity;
 import com.dungochung.shopdongho.entity.PromotionProductEntity;
 import com.dungochung.shopdongho.enums.Gender;
+import com.dungochung.shopdongho.enums.ProductStatus;
 import com.dungochung.shopdongho.enums.Segment;
 import com.dungochung.shopdongho.repository.OrderItemRepository;
 import com.dungochung.shopdongho.repository.ProductRepository;
@@ -63,7 +64,7 @@ public class ProductCustomerServiceImpl implements ProductCustomerService {
 
 	@Override
 	public ResponseDataDto getNewestProducts() {
-		List<ProductEntity> newestProducts = productRepository.findTop10ByOrderByCreatedAtDesc();
+		List<ProductEntity> newestProducts = productRepository.findTop10ByStatusOrderByCreatedAtDesc(ProductStatus.ACTIVE);
 
 		List<ProductInfoAllDto> dtos = newestProducts.stream().map(this::mapToProductInfoAllDto)
 				.collect(Collectors.toList());
@@ -81,7 +82,8 @@ public class ProductCustomerServiceImpl implements ProductCustomerService {
 		if (!topSelling.isEmpty()) {
 			for (Object[] row : topSelling) {
 				String pid = (String) row[0];
-				productRepository.findWithPromotionsAndImagesById(pid).ifPresent(featured::add);
+				productRepository.findWithPromotionsAndImagesById(pid).filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+							.ifPresent(featured::add);
 				if (featured.size() >= 10)
 					break;
 			}
@@ -108,7 +110,7 @@ public class ProductCustomerServiceImpl implements ProductCustomerService {
 
 	@Override
 	public ResponseDataDto getProductById(String productId) {
-		return productRepository.findWithPromotionsAndImagesById(productId)
+		return productRepository.findWithPromotionsAndImagesById(productId).filter(p -> p.getStatus() == ProductStatus.ACTIVE)
 				.map(p -> new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Success", mapToProductInfoAllDto(p)))
 				.orElseGet(
 						() -> new ResponseDataDto(Constant.RESULT_CD_FAIL, "Không tìm thấy sản phẩm id=" + productId));
@@ -137,11 +139,8 @@ public class ProductCustomerServiceImpl implements ProductCustomerService {
 
 		dto.setCreatedAt(product.getCreatedAt());
 		dto.setUpdatedAt(product.getUpdatedAt());
-		if (product.getInventory() != null) {
-			dto.setQuantity(product.getInventory().getQuantity());
-		} else {
-			dto.setQuantity(0);
-		}
+		// hàng có thể bán = tồn thực - đang giữ cho đơn chưa xuất kho (tổng các biến thể)
+		dto.setQuantity(product.getAvailableQuantity());
 		// Chuyển danh sách ảnh
 		if (product.getImages() != null) {
 			List<ImageDTO> imageDTOs = product.getImages().stream().map(img -> {
@@ -225,7 +224,7 @@ public class ProductCustomerServiceImpl implements ProductCustomerService {
 		Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
 		// 2. Lấy Page<ProductEntity> từ DB
-		Page<ProductEntity> productPage = productRepository.findAll(pageable);
+		Page<ProductEntity> productPage = productRepository.findByStatus(ProductStatus.ACTIVE, pageable);
 
 		// 3. Map từng entity sang DTO
 		List<ProductInfoAllDto> dtos = productPage.stream().map(this::mapToProductInfoAllDto).toList();

@@ -13,6 +13,26 @@
 		<button class="btn btn-success" onclick="openAddProductModal()">+ Add Product</button>
 	</div>
 
+	<!-- Hành động hàng loạt + CSV -->
+	<div class="card mb-3">
+		<div class="card-body d-flex flex-wrap gap-2 align-items-center">
+			<label class="form-check-label"><input type="checkbox" id="chkAllProducts" class="form-check-input"> Chọn tất cả (trang này)</label>
+			<select id="bulkStatus" class="form-select" style="width:auto"></select>
+			<button class="btn btn-outline-primary btn-sm" onclick="bulkApplyStatus()">Đổi trạng thái</button>
+			<select id="bulkPriceMode" class="form-select" style="width:auto">
+				<option value="PERCENT">± %</option>
+				<option value="AMOUNT">± số tiền</option>
+				<option value="SET">Đặt giá</option>
+			</select>
+			<input type="number" id="bulkPriceValue" class="form-control" style="width:8rem" step="0.01" placeholder="Giá trị">
+			<button class="btn btn-outline-primary btn-sm" onclick="bulkApplyPrice()">Đổi giá</button>
+			<span class="flex-grow-1"></span>
+			<a class="btn btn-outline-secondary btn-sm" href="/admin/products/api/export">Export CSV</a>
+			<input type="file" id="importFile" accept=".csv" class="form-control" style="width:14rem">
+			<button class="btn btn-outline-secondary btn-sm" onclick="importCsv()">Import CSV</button>
+		</div>
+	</div>
+
 	<!-- Product List -->
 	<ul class="list-group mb-3" id="productList">
 		<!-- JavaScript render danh sách sản phẩm -->
@@ -82,6 +102,10 @@
 									<div class="col-md-6 mb-3">
 										<label for="categoryId" class="form-label">Category:</label>
 										<select class="form-select" id="categoryId" name="categoryId"></select>
+									</div>
+									<div class="col-md-6 mb-3">
+										<label for="status" class="form-label">Status:</label>
+										<select class="form-select" id="status" name="status"></select>
 									</div>
 									<div class="col-md-6 mb-3">
 										<label for="origin" class="form-label">Origin:</label>
@@ -176,6 +200,44 @@
 		</div>
 	</div>
 
+	<!-- Modal biến thể -->
+	<div class="modal fade" id="variantsModal" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-xl">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Biến thể sản phẩm: <span id="variantsProductName"></span></h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-bordered">
+						<thead>
+							<tr><th>SKU</th><th>Tên</th><th>Màu</th><th>Dây</th><th>Size</th><th>Giá</th><th>Trạng thái</th><th>Tồn / Giữ / Bán được</th><th></th></tr>
+						</thead>
+						<tbody id="variantsBody"></tbody>
+					</table>
+					<h6 class="mt-4" id="variantFormTitle">Thêm biến thể</h6>
+					<form id="variantForm" class="row g-2">
+						<input type="hidden" id="variantId">
+						<div class="col-md-3"><label class="form-label">SKU</label><input class="form-control" id="variantSku" required></div>
+						<div class="col-md-3"><label class="form-label">Tên biến thể</label><input class="form-control" id="variantName" required></div>
+						<div class="col-md-2"><label class="form-label">Màu</label><input class="form-control" id="variantColor"></div>
+						<div class="col-md-2"><label class="form-label">Dây</label><input class="form-control" id="variantStrap"></div>
+						<div class="col-md-2"><label class="form-label">Size mặt</label><input class="form-control" id="variantSize"></div>
+						<div class="col-md-3"><label class="form-label">Giá</label><input type="number" step="0.01" class="form-control" id="variantPrice" required></div>
+						<div class="col-md-3"><label class="form-label">Trạng thái</label><select class="form-select" id="variantStatus"></select></div>
+						<div class="col-md-3" id="variantInitialWrap"><label class="form-label">Tồn ban đầu</label><input type="number" min="0" class="form-control" id="variantInitialQty" value="0"></div>
+						<div class="col-md-3"><label class="form-label">Ngưỡng cảnh báo tồn thấp</label><input type="number" min="0" class="form-control" id="variantThreshold" value="5"></div>
+						<div class="col-12"><label class="form-label">Ảnh riêng của biến thể (tick ảnh của sản phẩm)</label><div id="variantImages" class="d-flex flex-wrap gap-2"></div></div>
+						<div class="col-12 text-end">
+							<button type="button" class="btn btn-secondary" onclick="resetVariantForm()">Làm mới</button>
+							<button type="submit" class="btn btn-success">Lưu biến thể</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<!-- Toast -->
 	<div class="fixed top-4 right-4 z-[1080]">
 		<div id="errorToast" class="toast text-bg-danger" role="alert">
@@ -194,5 +256,6 @@
 	<!-- Scripts -->
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="/js/product.js"></script>
+	<script src="/js/product-variants.js"></script>
 </div>
 </html>

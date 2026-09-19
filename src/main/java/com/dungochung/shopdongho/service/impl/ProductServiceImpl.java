@@ -37,6 +37,13 @@ import com.dungochung.shopdongho.entity.StrapMaterialEntity;
 import com.dungochung.shopdongho.entity.WatchTypeEntity;
 import com.dungochung.shopdongho.enums.Gender;
 import com.dungochung.shopdongho.enums.ProductCondition;
+import com.dungochung.shopdongho.enums.ProductStatus;
+import com.dungochung.shopdongho.repository.InventoryRepository;
+import com.dungochung.shopdongho.repository.OrderItemRepository;
+import com.dungochung.shopdongho.repository.ProductVariantRepository;
+import com.dungochung.shopdongho.service.ProductVariantService;
+import com.dungochung.shopdongho.service.StockService;
+import org.springframework.transaction.annotation.Transactional;
 import com.dungochung.shopdongho.enums.Segment;
 import com.dungochung.shopdongho.repository.BrandReponsitory;
 import com.dungochung.shopdongho.repository.CaseMaterialReponsitory;
@@ -63,6 +70,16 @@ public class ProductServiceImpl implements ProductService {
 	private GlassMaterialReponsitory glassMaterialRepository;
 	@Autowired
 	private CategoryRepository categoryRepository;
+	@Autowired
+	private ProductVariantRepository variantRepository;
+	@Autowired
+	private ProductVariantService variantService;
+	@Autowired
+	private StockService stockService;
+	@Autowired
+	private InventoryRepository inventoryRepository;
+	@Autowired
+	private OrderItemRepository orderItemRepository;
 	@Autowired
 	private ProductImageRepository imageRepository;
 	@Autowired
@@ -105,14 +122,17 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseDataDto creatProduct(String sku, String name, BrandEntity brand, WatchTypeEntity type,
 			CaseMaterialEntity caseMaterial, StrapMaterialEntity strapMaterial, GlassMaterialEntity glassMaterial,
-			CategoryEntity category, String origin, ProductCondition condition, String warrantyPeriod,
-			BigDecimal price, Gender gender, Segment segment, String description, List<MultipartFile> images) {
+			CategoryEntity category, ProductStatus status, String origin, ProductCondition condition,
+			String warrantyPeriod, BigDecimal price, Gender gender, Segment segment, String description,
+			List<MultipartFile> images) {
 		if (brand == null || type == null || caseMaterial == null || strapMaterial == null || glassMaterial == null) {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "One or more category information is invalid.", null);
 		}
 
+		sku = sku == null ? null : sku.trim();
 		ProductEntity product = new ProductEntity();
 		product.setSku(sku);
 		product.setName(name);
@@ -122,6 +142,13 @@ public class ProductServiceImpl implements ProductService {
 		product.setStrapMaterial(strapMaterial);
 		product.setGlassMaterial(glassMaterial);
 		product.setCategory(category);
+		product.setStatus(status != null ? status : ProductStatus.ACTIVE);
+		if (price == null || price.signum() <= 0) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Giá phải lớn hơn 0", null);
+		}
+		if (skuUsedByOtherProduct(sku, null)) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "SKU đã tồn tại", null);
+		}
 		product.setOrigin(origin);
 		product.setCondition(condition);
 		product.setWarrantyPeriod(warrantyPeriod);
@@ -131,6 +158,8 @@ public class ProductServiceImpl implements ProductService {
 		product.setDescription(description);
 		// Tạm thời chưa set images, vì phải save product trước mới có ID
 		ProductEntity savedProduct = productRepository.save(product);
+		// Mọi sản phẩm luôn có 1 biến thể mặc định + dòng tồn kho (0) để module kho/đơn hàng hoạt động
+		stockService.ensureInventory(variantService.ensureDefaultVariant(savedProduct));
 
 		// Xử lý ảnh nếu có
 		if (images != null && !images.isEmpty()) {
@@ -166,11 +195,12 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseDataDto updateProduct(String productId, String sku, String name, BrandEntity brand,
 			WatchTypeEntity type, CaseMaterialEntity caseMaterial, StrapMaterialEntity strapMaterial,
-			GlassMaterialEntity glassMaterial, CategoryEntity category, String origin, ProductCondition condition,
-			String warrantyPeriod, BigDecimal price, Gender gender, Segment segment, String description,
-			List<MultipartFile> images, List<String> oldImageNames) {
+			GlassMaterialEntity glassMaterial, CategoryEntity category, ProductStatus status, String origin,
+			ProductCondition condition, String warrantyPeriod, BigDecimal price, Gender gender, Segment segment,
+			String description, List<MultipartFile> images, List<String> oldImageNames) {
 
 		ProductEntity existingProduct = productRepository.findById(productId).orElse(null);
 		if (existingProduct == null) {
@@ -178,6 +208,7 @@ public class ProductServiceImpl implements ProductService {
 		}
 
 		// Cập nhật thông tin cơ bản
+		sku = sku == null ? null : sku.trim();
 		existingProduct.setSku(sku);
 		existingProduct.setName(name);
 		existingProduct.setBrand(brand);
@@ -186,6 +217,15 @@ public class ProductServiceImpl implements ProductService {
 		existingProduct.setStrapMaterial(strapMaterial);
 		existingProduct.setGlassMaterial(glassMaterial);
 		existingProduct.setCategory(category);
+		if (status != null) {
+			existingProduct.setStatus(status);
+		}
+		if (price == null || price.signum() <= 0) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Giá phải lớn hơn 0", null);
+		}
+		if (skuUsedByOtherProduct(sku, productId)) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "SKU đã tồn tại", null);
+		}
 		existingProduct.setOrigin(origin);
 		existingProduct.setCondition(condition);
 		existingProduct.setWarrantyPeriod(warrantyPeriod);
@@ -231,15 +271,23 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 
-		productRepository.save(existingProduct);
+		ProductEntity savedExisting = productRepository.save(existingProduct);
+		// giá/sku sản phẩm luôn là giá/sku của biến thể mặc định
+		variantService.syncDefaultFromProduct(savedExisting);
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Product updated successfully", null);
 	}
 
 	@Override
+	@Transactional
 	public ResponseDataDto deleteProduct(String productId) {
 		ProductEntity product = productRepository.findById(productId).orElse(null);
 		if (product == null) {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Product not found", null);
+		}
+
+		if (orderItemRepository.existsByProduct_ProductId(productId)) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL,
+					"Không thể xóa: sản phẩm đã có trong đơn hàng. Hãy chuyển trạng thái sang DISCONTINUED thay vì xóa.", null);
 		}
 
 		// Xoá ảnh vật lý khỏi ổ đĩa
@@ -249,9 +297,26 @@ public class ProductServiceImpl implements ProductService {
 			}
 		}
 
-		// Xoá product (cascade delete nếu JPA mapping đúng)
+		// Xoá tồn kho + biến thể trước (lịch sử kho inventory_movements được giữ lại để đối soát)
+		inventoryRepository.deleteAll(inventoryRepository.findAll().stream()
+				.filter(i -> i.getProduct() != null && productId.equals(i.getProduct().getProductId())).toList());
+		if (product.getImages() != null) {
+			product.getImages().forEach(img -> img.setVariant(null));
+		}
+		productRepository.saveAndFlush(product);
+		variantRepository.deleteAll(variantRepository.findByProduct_ProductIdOrderBySortOrderAscVariantIdAsc(productId));
 		productRepository.delete(product);
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Product deleted successfully", null);
+	}
+
+	/** SKU đã bị biến thể của sản phẩm khác (hoặc biến thể phụ của chính nó) chiếm dụng? */
+	private boolean skuUsedByOtherProduct(String sku, String selfProductId) {
+		if (sku == null) {
+			return false;
+		}
+		return variantRepository.findBySku(sku.trim())
+				.filter(v -> selfProductId == null || !v.getProduct().getProductId().equals(selfProductId) || !v.isDefault())
+				.isPresent();
 	}
 
 	// productDtos được map theo đúng thứ tự của products nên gán danh mục theo index
@@ -262,6 +327,9 @@ public class ProductServiceImpl implements ProductService {
 				dtos.get(i).setCategoryId(c.getCategoryId());
 				dtos.get(i).setCategoryName(c.getName());
 			}
+			dtos.get(i).setStatus(products.get(i).getStatus().name());
+			dtos.get(i).setAvailableQuantity(products.get(i).getAvailableQuantity());
+			dtos.get(i).setVariantCount(variantRepository.countByProduct_ProductId(products.get(i).getProductId()));
 		}
 	}
 
@@ -342,6 +410,7 @@ public class ProductServiceImpl implements ProductService {
 
 		response.put("conditions",
 				Arrays.stream(ProductCondition.values()).map(Enum::name).collect(Collectors.toList()));
+		response.put("statuses", Arrays.stream(ProductStatus.values()).map(Enum::name).collect(Collectors.toList()));
 		response.put("genders", Arrays.stream(Gender.values()).map(Enum::name).collect(Collectors.toList()));
 		response.put("segments", Arrays.stream(Segment.values()).map(Enum::name).collect(Collectors.toList()));
 
@@ -377,6 +446,9 @@ public class ProductServiceImpl implements ProductService {
 			productDto.setCategoryId(product.getCategory().getCategoryId());
 			productDto.setCategoryName(product.getCategory().getName());
 		}
+		productDto.setStatus(product.getStatus().name());
+		productDto.setAvailableQuantity(product.getAvailableQuantity());
+		productDto.setVariantCount(variantRepository.countByProduct_ProductId(productId));
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Success", productDto);
 	}
 

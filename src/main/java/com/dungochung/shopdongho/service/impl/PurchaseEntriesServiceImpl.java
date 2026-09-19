@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.dungochung.shopdongho.common.PaginationCommon;
 import com.dungochung.shopdongho.common.constant.Constant;
@@ -24,6 +25,10 @@ import com.dungochung.shopdongho.dto.PurchaseEntryDto;
 import com.dungochung.shopdongho.dto.ResponseDataDto;
 import com.dungochung.shopdongho.entity.InventoryEntity;
 import com.dungochung.shopdongho.entity.ProductEntity;
+import com.dungochung.shopdongho.entity.ProductVariantEntity;
+import com.dungochung.shopdongho.enums.MovementType;
+import com.dungochung.shopdongho.service.ProductVariantService;
+import com.dungochung.shopdongho.service.StockService;
 import com.dungochung.shopdongho.entity.PurchaseEntriesEntity;
 import com.dungochung.shopdongho.repository.InventoryRepository;
 import com.dungochung.shopdongho.repository.ProductRepository;
@@ -38,6 +43,10 @@ public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
 	private ProductRepository productRepository;
 	@Autowired
 	private InventoryRepository inventoryRepository;
+	@Autowired
+	private StockService stockService;
+	@Autowired
+	private ProductVariantService variantService;
 
 	@Override
 	public ResponseDataDto getAllEntries(int page, int size) {
@@ -58,6 +67,7 @@ public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseDataDto deleteEntry(Long id) {
 		Optional<PurchaseEntriesEntity> optional = entriesRepository.findById(id);
 		if (optional.isEmpty()) {
@@ -77,14 +87,19 @@ public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
 			return new ResponseDataDto(Constant.RESULT_CD_FAIL,
 					"Cannot delete: current stock less than entry quantity");
 		}
-		inventory.setQuantity(inventory.getQuantity() - entry.getQuantity());
-		inventoryRepository.save(inventory);
+		try {
+			stockService.adjust(inventory, -entry.getQuantity(), MovementType.PURCHASE_REVERSAL, "PE-" + id,
+					"Xóa phiếu nhập");
+		} catch (IllegalArgumentException e) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL, e.getMessage());
+		}
 
 		entriesRepository.delete(entry);
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Purchase Entry deleted successfully");
 	}
 
 	@Override
+	@Transactional
 	public ResponseDataDto createEntry(PurchaseEntriesEntity entry) {
 		// Validate product
 		if (entry.getProduct() == null || entry.getProduct().getProductId() == null) {
@@ -100,21 +115,25 @@ public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
 		// Save entry
 		PurchaseEntriesEntity savedEntry = entriesRepository.save(entry);
 
-		// Update inventory
-		InventoryEntity inventory = inventoryRepository.findByProduct(product).orElseGet(() -> {
-			InventoryEntity inv = new InventoryEntity();
-			inv.setProduct(product);
-			inv.setQuantity(0);
-			return inv;
-		});
-		inventory.setQuantity(inventory.getQuantity() + savedEntry.getQuantity());
-		inventoryRepository.save(inventory);
+		// Update inventory (biến thể mặc định của sản phẩm) + ghi lịch sử kho
+		InventoryEntity inventory = defaultInventory(product);
+		stockService.adjust(inventory, savedEntry.getQuantity(), MovementType.PURCHASE_IN,
+				"PE-" + savedEntry.getEntryId(), savedEntry.getNote());
 
 		return new ResponseDataDto(Constant.RESULT_CD_SUCCESS, "Purchase Entry created successfully",
 				savedEntry.getEntryId());
 	}
 
+	/** Tồn kho của biến thể mặc định; tự tạo biến thể + tồn kho nếu sản phẩm chưa có (dữ liệu cũ). */
+	private InventoryEntity defaultInventory(ProductEntity product) {
+		return inventoryRepository.findByProduct(product).orElseGet(() -> {
+			ProductVariantEntity v = variantService.ensureDefaultVariant(product);
+			return stockService.ensureInventory(v);
+		});
+	}
+
 	@Override
+	@Transactional
 	public ResponseDataDto updateEntry(PurchaseEntriesEntity entry, Long id) {
 		Optional<PurchaseEntriesEntity> optional = entriesRepository.findById(id);
 		if (optional.isEmpty()) {
@@ -132,46 +151,31 @@ public class PurchaseEntriesServiceImpl implements PurchaseEntriesService {
 		ProductEntity oldProduct = existing.getProduct();
 		int oldQty = existing.getQuantity();
 		int newQty = entry.getQuantity();
+		String ref = "PE-" + id;
 
-		// Nếu người dùng chọn sản phẩm mới (khác với cũ)
-		if (entry.getProduct() != null && entry.getProduct().getProductId() != null) {
-			String newProductId = entry.getProduct().getProductId();
-			if (!oldProduct.getProductId().equals(newProductId)) {
-				Optional<ProductEntity> productOpt = productRepository.findById(newProductId);
+		try {
+			// Nếu người dùng chọn sản phẩm mới (khác với cũ)
+			if (entry.getProduct() != null && entry.getProduct().getProductId() != null
+					&& !oldProduct.getProductId().equals(entry.getProduct().getProductId())) {
+				Optional<ProductEntity> productOpt = productRepository.findById(entry.getProduct().getProductId());
 				if (productOpt.isEmpty()) {
 					return new ResponseDataDto(Constant.RESULT_CD_FAIL, "New product does not exist", 400);
 				}
 				ProductEntity newProduct = productOpt.get();
 
-				// Giảm tồn kho sản phẩm cũ
-				InventoryEntity oldInventory = inventoryRepository.findByProduct(oldProduct).orElse(null);
-				if (oldInventory != null) {
-					oldInventory.setQuantity(oldInventory.getQuantity() - oldQty);
-					inventoryRepository.save(oldInventory);
-				}
-
-				// Tăng tồn kho sản phẩm mới
-				InventoryEntity newInventory = inventoryRepository.findByProduct(newProduct).orElseGet(() -> {
-					InventoryEntity newInv = new InventoryEntity();
-					newInv.setProduct(newProduct);
-					newInv.setQuantity(0);
-					return inventoryRepository.save(newInv);
-				});
-
-				newInventory.setQuantity(newInventory.getQuantity() + newQty);
-				inventoryRepository.save(newInventory);
-
-				// Cập nhật product
+				// Giảm tồn kho sản phẩm cũ, tăng tồn kho sản phẩm mới
+				stockService.adjust(defaultInventory(oldProduct), -oldQty, MovementType.PURCHASE_REVERSAL, ref,
+						"Đổi sản phẩm của phiếu nhập");
+				stockService.adjust(defaultInventory(newProduct), newQty, MovementType.PURCHASE_IN, ref,
+						"Đổi sản phẩm của phiếu nhập");
 				existing.setProduct(newProduct);
-			} else {
-				// Cùng sản phẩm, chỉ cập nhật số lượng tồn kho chênh lệch
-				InventoryEntity inventory = inventoryRepository.findByProduct(oldProduct).orElse(null);
-				if (inventory != null) {
-					int diff = newQty - oldQty;
-					inventory.setQuantity(inventory.getQuantity() + diff);
-					inventoryRepository.save(inventory);
-				}
+			} else if (newQty != oldQty) {
+				// Cùng sản phẩm, chỉ điều chỉnh phần chênh lệch
+				stockService.adjust(defaultInventory(oldProduct), newQty - oldQty, MovementType.ADJUSTMENT, ref,
+						"Sửa số lượng phiếu nhập " + oldQty + " -> " + newQty);
 			}
+		} catch (IllegalArgumentException e) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL, e.getMessage());
 		}
 
 		// Cập nhật các trường còn lại
