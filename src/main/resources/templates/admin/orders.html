@@ -296,7 +296,11 @@
         });
     }
 
-    document.addEventListener("DOMContentLoaded", () => fetchOrders(currentPage));
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchOrders(currentPage);
+      const open = new URLSearchParams(location.search).get('open');
+      if (open) openDetail(open);
+    });
   </script>
 </div>
 </html>

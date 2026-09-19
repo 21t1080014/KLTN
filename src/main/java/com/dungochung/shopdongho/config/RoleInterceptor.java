@@ -35,6 +35,9 @@ public class RoleInterceptor implements HandlerInterceptor {
 						|| role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
 			// warehouse_staff vào được để đóng gói/giao hàng; quyền từng thao tác do OrderWorkflow kiểm tra ở service
 			isAuthorized = true;
+		} else if (uri.startsWith("/admin/customers")
+				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_SUPPORT_STAFF))) {
+			isAuthorized = true;
 		} else if (uri.startsWith("/admin/inventory")
 				&& (role.equals(Constant.ROLE_ADMIN) || role.equals(Constant.ROLE_WAREHOUSE_STAFF))) {
 			isAuthorized = true;

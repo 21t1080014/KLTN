@@ -82,7 +82,8 @@ class OrderFlowTest {
 
 	@BeforeEach
 	void setUp() {
-		List<UserEntity> users = userRepository.findAll();
+		List<UserEntity> users = userRepository.findAll().stream()
+				.filter(u -> u.getStatus() == com.dungochung.shopdongho.enums.UserStatus.ACTIVE).toList();
 		customer = users.get(0);
 		otherCustomer = users.get(1);
 		// Chọn 1 sản phẩm ACTIVE không có khuyến mãi để giá server = giá niêm yết

@@ -22,6 +22,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
 	@EntityGraph(attributePaths = { "user" })
 	Page<OrderEntity> findByOrderStatus(com.dungochung.shopdongho.enums.OrderStatus orderStatus, Pageable pageable);
 
+	boolean existsByUserId(String userId);
+
+	@Query("SELECT o.orderStatus, o.paymentStatus, COUNT(o), COALESCE(SUM(o.totalPrice), 0), MIN(o.createdAt), MAX(o.createdAt) "
+			+ "FROM OrderEntity o WHERE o.userId = :userId GROUP BY o.orderStatus, o.paymentStatus")
+	List<Object[]> summarizeByUser(@org.springframework.data.repository.query.Param("userId") String userId);
+
 	@Query("SELECT COUNT(o) FROM OrderEntity o")
 	long countAllOrders();
 

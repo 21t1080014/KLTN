@@ -111,6 +111,12 @@ public class OrderServiceImpl implements OrderService {
 				return new ResponseDataDto(Constant.RESULT_CD_FAIL, "Thông tin sản phẩm trong đơn không hợp lệ", false);
 			}
 		}
+		// Session có thể còn sống sau khi tài khoản bị khóa nên luôn kiểm tra lại trạng thái trong DB
+		UserEntity buyer = userRepository.findById(userId).orElse(null);
+		if (buyer == null || buyer.getStatus() != com.dungochung.shopdongho.enums.UserStatus.ACTIVE) {
+			return new ResponseDataDto(Constant.RESULT_CD_FAIL,
+					"Tài khoản của bạn đã bị khóa hoặc chưa kích hoạt, không thể đặt hàng. Vui lòng liên hệ cửa hàng.", false);
+		}
 		try {
 			return transactionTemplate.execute(status -> doCreateOrder(userId, items, totalPrice, paymentMethod));
 		} catch (IllegalArgumentException e) {

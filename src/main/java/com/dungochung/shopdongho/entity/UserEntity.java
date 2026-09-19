@@ -66,6 +66,23 @@ public class UserEntity {
 	@Column(name = "profile_image", nullable = true, length = 255)
 	private String userImage;
 
+	// Thông tin khóa tài khoản + ghi chú nội bộ của CSKH: chỉ dành cho nhân viên, không bao giờ trả ra JSON mặc định
+	@JsonIgnore
+	@Column(name = "lock_reason", length = 255)
+	private String lockReason;
+
+	@JsonIgnore
+	@Column(name = "locked_at")
+	private LocalDateTime lockedAt;
+
+	@JsonIgnore
+	@Column(name = "locked_by", length = 100)
+	private String lockedBy;
+
+	@JsonIgnore
+	@Column(name = "internal_note", length = 1000)
+	private String internalNote;
+
 	@PrePersist
 	protected void onCreate() {
 		createdAt = updatedAt = LocalDateTime.now();
@@ -194,6 +211,38 @@ public class UserEntity {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public String getLockReason() {
+		return lockReason;
+	}
+
+	public void setLockReason(String lockReason) {
+		this.lockReason = lockReason;
+	}
+
+	public LocalDateTime getLockedAt() {
+		return lockedAt;
+	}
+
+	public void setLockedAt(LocalDateTime lockedAt) {
+		this.lockedAt = lockedAt;
+	}
+
+	public String getLockedBy() {
+		return lockedBy;
+	}
+
+	public void setLockedBy(String lockedBy) {
+		this.lockedBy = lockedBy;
+	}
+
+	public String getInternalNote() {
+		return internalNote;
+	}
+
+	public void setInternalNote(String internalNote) {
+		this.internalNote = internalNote;
 	}
 
 	public String getUserImage() {
