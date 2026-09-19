@@ -33,6 +33,7 @@ Mật khẩu DB đặt bằng biến môi trường `DB_USERNAME`, `DB_PASSWORD`
 
 - **Giao diện gốc** (Bootstrap) có sẵn từ các commit đầu của dự án (`b834425`, `bb9dc23`).
 - **Toàn bộ giao diện hiện tại** (các trang cửa hàng và các trang quản trị có sẵn lúc đó) được **thiết kế lại bằng Tailwind CSS theo phong cách tối giản – sang trọng** bởi **Claude Code (trợ lý AI của Anthropic)**, theo yêu cầu của **Du Ngoc Hung**, ngày **19/09/2026**, commit `65f0348`. Nhật ký chi tiết từng trang: `CHANGES_FRONTEND_REDESIGN.md`.
+- Hệ thống lại cấu trúc theo yêu cầu chủ sở hữu muốn không sửa code ban đầu chỉ sửa lại giao diện cũ của hệ thông theo phong cách hiện đại hơn.
 
 **Muốn sửa giao diện sau này thì sửa ở đâu:**
 
