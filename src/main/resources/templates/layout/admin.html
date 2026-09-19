@@ -41,7 +41,7 @@
 					data-bs-toggle="offcanvas" data-bs-target="#sidebar-offcanvas">
 					<i class="bi bi-list"></i>
 				</button>
-				<a class="font-heading text-lg tracking-wide2" th:href="@{/admin/dashboard}"><i
+				<a class="font-heading text-lg tracking-wide2 text-white" th:href="@{/admin/dashboard}"><i
 						class="bi bi-clock me-2"></i>TIKTAKUS Admin</a>
 			</div>
 
@@ -71,7 +71,7 @@
 
 				<!-- Sản phẩm: admin + product_staff -->
 				<li th:if="${session.roleName=='admin' or session.roleName=='product_staff'}">
-					<a class="flex items-center justify-between px-3 py-2 hover:bg-white/10 transition-colors cursor-pointer"
+					<a class="flex items-center justify-between px-3 py-2 text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
 						data-bs-toggle="collapse" href="#productMenu"> <span><i
 								class="bi bi-box-seam me-2"></i>Sản phẩm</span> <i class="bi bi-chevron-down"></i>
 					</a>
@@ -88,7 +88,7 @@
 
 				<!-- Thuộc tính: admin only -->
 				<li th:if="${session.roleName=='admin'}">
-					<a class="flex items-center justify-between px-3 py-2 hover:bg-white/10 transition-colors cursor-pointer"
+					<a class="flex items-center justify-between px-3 py-2 text-white/90 hover:bg-white/10 transition-colors cursor-pointer"
 						data-bs-toggle="collapse" href="#categoryMenu"> <span><i
 								class="bi bi-tags me-2"></i>Thuộc tính</span> <i class="bi bi-chevron-down"></i>
 					</a>

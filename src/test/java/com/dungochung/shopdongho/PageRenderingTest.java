@@ -49,4 +49,19 @@ class PageRenderingTest {
 					.andExpect(status().isOk());
 		}
 	}
+
+	/** Regression: mục "Sản phẩm"/"Thuộc tính" là nút collapse phải có màu chữ sáng (trước đây thừa kế màu link tối => chìm vào nền sidebar). */
+	@Test
+	void adminSidebarShowsProductAndAttributeMenusForAdminWithVisibleColor() throws Exception {
+		String html = mockMvc.perform(get("/admin/dashboard").with(AdminAuth.as("admin"))).andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		for (String target : new String[] { "#productMenu", "#categoryMenu" }) {
+			int i = html.indexOf("href=\"" + target + "\"");
+			org.junit.jupiter.api.Assertions.assertTrue(i > 0, target + " phải có trong menu của admin");
+			String tag = html.substring(html.lastIndexOf("<a ", i), i);
+			org.junit.jupiter.api.Assertions.assertTrue(tag.contains("text-white"), target + " thiếu lớp màu chữ sáng: " + tag);
+		}
+		org.junit.jupiter.api.Assertions.assertTrue(html.contains("/admin/products") && html.contains("/admin/brands")
+				&& html.contains("/admin/categories/watch-types"));
+	}
 }
