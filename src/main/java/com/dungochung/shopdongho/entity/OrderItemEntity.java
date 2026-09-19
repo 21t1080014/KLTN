@@ -19,6 +19,12 @@ public class OrderItemEntity {
 	@JoinColumn(name = "product_id", nullable = false)
 	private ProductEntity product;
 
+	// Biến thể đã bán (null với đơn cũ trước khi có biến thể; được backfill về biến thể mặc định)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "variant_id", foreignKey = @ForeignKey(name = "fk_order_item_variant"))
+	@com.fasterxml.jackson.annotation.JsonIgnore
+	private ProductVariantEntity variant;
+
 	@Column(name = "quantity", nullable = false)
 	private int quantity;
 
@@ -62,6 +68,14 @@ public class OrderItemEntity {
 
 	public void setProduct(ProductEntity product) {
 		this.product = product;
+	}
+
+	public ProductVariantEntity getVariant() {
+		return variant;
+	}
+
+	public void setVariant(ProductVariantEntity variant) {
+		this.variant = variant;
 	}
 
 	public int getQuantity() {

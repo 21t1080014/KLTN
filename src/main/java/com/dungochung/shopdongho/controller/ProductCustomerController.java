@@ -182,6 +182,17 @@ public class ProductCustomerController {
 		return orderService.createOrder(currentUser.getUserId(), items, totalPrice, paymentMethod);
 	}
 
+	/** Khách tự hủy đơn của chính mình (chỉ khi chưa vào đóng gói). Chủ đơn lấy từ session, không tin client. */
+	@PostMapping("/orders/{orderId}/cancel")
+	public ResponseDataDto cancelOrder(@PathVariable Integer orderId, @RequestParam(required = false) String reason,
+			HttpSession session) {
+		UserEntity currentUser = (UserEntity) session.getAttribute("currentUser");
+		if (currentUser == null) {
+			return new ResponseDataDto(401, "Bạn chưa đăng nhập", null);
+		}
+		return orderService.cancelByCustomer(currentUser.getUserId(), orderId, reason, currentUser.getUsername());
+	}
+
 	@PostMapping("/apply-voucher")
 	public ResponseDataDto applyVoucher(@RequestBody ApplyVoucherRequestDto request, HttpSession session) {
 		UserEntity currentUser = (UserEntity) session.getAttribute("currentUser");

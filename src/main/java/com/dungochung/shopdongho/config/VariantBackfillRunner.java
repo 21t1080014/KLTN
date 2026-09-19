@@ -31,6 +31,7 @@ import com.dungochung.shopdongho.service.StockService;
  * 4. Ghi 1 dòng lịch sử INITIAL cho số dư đầu kỳ của mỗi biến thể chưa có lịch sử.
  */
 @Component
+@org.springframework.core.annotation.Order(1)
 public class VariantBackfillRunner implements ApplicationRunner {
 	private static final Logger log = LoggerFactory.getLogger(VariantBackfillRunner.class);
 

@@ -19,6 +19,9 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Integer> {
 	@EntityGraph(attributePaths = { "user" })
 	Page<OrderEntity> findAll(Pageable pageable);
 
+	@EntityGraph(attributePaths = { "user" })
+	Page<OrderEntity> findByOrderStatus(com.dungochung.shopdongho.enums.OrderStatus orderStatus, Pageable pageable);
+
 	@Query("SELECT COUNT(o) FROM OrderEntity o")
 	long countAllOrders();
 
